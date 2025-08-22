@@ -35,6 +35,20 @@ function formatDateEn(dateStr) {
   return m;
 }
 
+// قراءة قيمة تاريخ من input#id مع تطبيع موحّد
+function getDateInputValue(inputId, fallbackToday) {
+  const el = document.getElementById(inputId);
+  const fallback = fallbackToday || (new Date()).toISOString().slice(0, 10);
+  if (!el) return formatDateEn(fallback);
+  try {
+    if (el.value) return formatDateEn(el.value);
+    if (el.valueAsDate instanceof Date && !isNaN(el.valueAsDate.getTime())) {
+      return el.valueAsDate.toISOString().slice(0, 10);
+    }
+  } catch(_) {}
+  return formatDateEn(fallback);
+}
+
 // تطبيق تنسيق الأرقام على جميع حقول الإدخال ذات الصنف formatted-input
 function setupFormattedInputs() {
   document.querySelectorAll('.formatted-input').forEach(input => {
@@ -177,6 +191,7 @@ if (typeof window !== 'undefined') {
   window.formatNumber = formatNumber;
   window.parseFormattedNumber = parseFormattedNumber;
   window.formatDateEn = formatDateEn;
+  window.getDateInputValue = getDateInputValue;
   window.showNotification = showNotification;
   window.switchSection = switchSection;
 }

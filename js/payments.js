@@ -14,7 +14,7 @@ function savePayment() {
   const storeId = document.getElementById('paymentStoreId').value;
   const amount = parseFormattedNumber(document.getElementById('paymentAmount').value);
   const notes = document.getElementById('paymentNotes').value;
-  const date = document.getElementById('paymentDate').value || today;
+  const date = (typeof formatDateEn==='function') ? formatDateEn(document.getElementById('paymentDate').value || today) : (document.getElementById('paymentDate').value || today);
   if (!storeId || isNaN(amount) || amount <= 0) { showNotification('يرجى ملء جميع الحقول المطلوبة', 'error'); return; }
   if (id) {
     const payment = data.payments.find(p => p.id === id);

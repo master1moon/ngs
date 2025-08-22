@@ -19,10 +19,13 @@ function showStoreDetails(storeId) {
   const totalSales = sales.reduce((sum, sale) => sum + sale.total, 0);
   const totalPayments = payments.reduce((sum, payment) => sum + payment.amount, 0);
   const balance = totalSales - totalPayments;
+
+  const esc = (v)=>{ try{ return (window.SecurityUtils && window.SecurityUtils.escapeHtml) ? window.SecurityUtils.escapeHtml(v) : String(v||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'}[m])); }catch{ return String(v||''); } };
+
   details.innerHTML = `
     <div class="d-flex justify-content-between mb-4">
       <div><h5>الرصيد الحالي:</h5><p class="h4 ${balance >= 0 ? 'text-success' : 'text-danger'} currency">${formatNumber(Math.abs(balance))}</p></div>
-      <div><h5>نوع السعر:</h5><p class="h5">${getPriceTypeName(store.priceType)}</p></div>
+      <div><h5>نوع السعر:</h5><p class="h5">${esc(getPriceTypeName(store.priceType))}</p></div>
       <div>
         <button class="btn btn-success" id="addSaleBtn" data-store="${storeId}"><i class="fas fa-plus me-2"></i>إضافة بيع</button>
         <button class="btn btn-info" id="addPaymentBtn" data-store="${storeId}"><i class="fas fa-money-bill me-2"></i>تسديد دفعة</button>
@@ -56,9 +59,9 @@ function showStoreDetails(storeId) {
     const isCustom = sale.packageId === 'custom';
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${sale.date}</td>
-      <td>${sale.reason || (pkg ? pkg.name : 'غير معروف')}</td>
-      <td>${isCustom ? ('<span class="currency">' + formatNumber(sale.amount) + '</span>') : sale.quantity}</td>
+      <td>${esc(sale.date)}</td>
+      <td>${esc(sale.reason || (pkg ? pkg.name : 'غير معروف'))}</td>
+      <td>${isCustom ? ('<span class="currency">' + formatNumber(sale.amount) + '</span>') : esc(sale.quantity)}</td>
       <td class="currency">${formatNumber(sale.total)}</td>
       <td class="action-buttons">
         <button class="btn btn-sm btn-warning edit-sale" data-id="${sale.id}"><i class="fas fa-edit"></i></button>
@@ -70,9 +73,9 @@ function showStoreDetails(storeId) {
   payments.forEach(payment => {
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${payment.date}</td>
+      <td>${esc(payment.date)}</td>
       <td class="currency">${formatNumber(payment.amount)}</td>
-      <td>${payment.notes || ''}</td>
+      <td>${esc(payment.notes || '')}</td>
       <td class="action-buttons">
         <button class="btn btn-sm btn-warning edit-payment" data-id="${payment.id}"><i class="fas fa-edit"></i></button>
         <button class="btn btn-sm btn-danger delete-payment" data-id="${payment.id}"><i class="fas fa-trash"></i></button>
@@ -121,7 +124,7 @@ function saveStore() {
   const id = document.getElementById('storeId').value;
   const name = document.getElementById('storeName').value;
   const priceType = document.getElementById('storePriceType').value;
-  const date = document.getElementById('storeDate').value || today;
+  const date = (typeof getDateInputValue==='function') ? getDateInputValue('storeDate', today) : ((typeof formatDateEn==='function') ? formatDateEn(document.getElementById('storeDate').value || today) : (document.getElementById('storeDate').value || today));
   if (!name) { showNotification('يرجى إدخال اسم المحل', 'error'); return; }
   if (id) {
     const store = data.stores.find(s => s.id === id);

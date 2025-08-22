@@ -46,6 +46,14 @@ function getPriceTypeName(priceType) {
   }
 }
 
+// دالة تعقيم نصوص آمنة للاستخدام في HTML
+function h(value){
+  if (value == null) return '';
+  try { if (window.SecurityUtils && window.SecurityUtils.escapeHtml) return window.SecurityUtils.escapeHtml(value); } catch(_) {}
+  const s = String(value);
+  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'}[m]));
+}
+
 // دالة للتحقق من تطابق المحل مع الفلتر
 function isStoreMatch(item) {
   const storeFilter = (document.getElementById('reportsStoreFilter')?.value) || 'all';
@@ -103,7 +111,7 @@ function generatePartnerReports() {
     <div class="partner-report-card">
       <div class="partner-report-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h5 class="partner-report-title mb-0">تقرير الشركاء</h5>
-        <div class="partner-report-dates">المدة: ${text} | الشركاء: ${partners}</div>
+        <div class="partner-report-dates">المدة: ${h(text)} | الشركاء: ${partners}</div>
       </div>
       <div class="partner-report-summary d-flex flex-wrap gap-3 my-2">
         <div class="summary-item"><div class="summary-value currency">${formatNumber(totalPays)}</div><div class="summary-label">إجمالي التسديدات</div></div>
@@ -114,11 +122,11 @@ function generatePartnerReports() {
       <div class="row g-3">
         <div class="col-12 col-md-6">
           <h6>جميع التسديدات</h6>
-          <div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>التاريخ</th><th>المحل</th><th>المبلغ</th><th>ملاحظات</th></tr></thead><tbody>${listPays.map(r=>`<tr><td>${r.التاريخ}</td><td>${r.المحل}</td><td class="currency">${formatNumber(r.المبلغ)}</td><td>${r.ملاحظات}</td></tr>`).join('')}</tbody></table></div>
+          <div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>التاريخ</th><th>المحل</th><th>المبلغ</th><th>ملاحظات</th></tr></thead><tbody>${listPays.map(r=>`<tr><td>${h(r.التاريخ)}</td><td>${h(r.المحل)}</td><td class="currency">${formatNumber(r.المبلغ)}</td><td>${h(r.ملاحظات)}</td></tr>`).join('')}</tbody></table></div>
         </div>
         <div class="col-12 col-md-6">
           <h6>جميع المصروفات</h6>
-          <div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>ملاحظات</th></tr></thead><tbody>${listExps.map(r=>`<tr><td>${r.التاريخ}</td><td>${r.النوع}</td><td class="currency">${formatNumber(r.المبلغ)}</td><td>${r.ملاحظات}</td></tr>`).join('')}</tbody></table></div>
+          <div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>ملاحظات</th></tr></thead><tbody>${listExps.map(r=>`<tr><td>${h(r.التاريخ)}</td><td>${h(r.النوع)}</td><td class="currency">${formatNumber(r.المبلغ)}</td><td>${h(r.ملاحظات)}</td></tr>`).join('')}</tbody></table></div>
         </div>
       </div>
     </div>`;
@@ -145,7 +153,7 @@ function buildPartnerReportHTML(periodText, partnersCount, paysList, expsList, t
     '@media print { .actions{ display:none } }'+
     '@page{ size:A4; margin:12mm; }'+
     '</style></head>';
-  html += '<body>' + '<div class="actions"><button onclick="window.print()">حفظ التقرير كـ PDF</button></div>' + '<h3>تقرير الشركاء</h3>' + '<div>المدة: ' + periodText + ' | عدد الشركاء: ' + partnersCount + ' | تاريخ التصدير: ' + (new Date()).toISOString().slice(0, 10) + '</div>';
+  html += '<body>' + '<div class="actions"><button onclick="window.print()">حفظ التقرير كـ PDF</button></div>' + '<h3>تقرير الشركاء</h3>' + '<div>المدة: ' + h(periodText) + ' | عدد الشركاء: ' + partnersCount + ' | تاريخ التصدير: ' + (new Date()).toISOString().slice(0, 10) + '</div>';
   html += '<div class="summary">' +
     '<div class="box">إجمالي التسديدات: <span class="currency">' + (totalPays||0).toLocaleString('en-US') + '</span></div>' +
     '<div class="box">إجمالي المصروفات: <span class="currency">' + (totalExps||0).toLocaleString('en-US') + '</span></div>' +
@@ -153,8 +161,8 @@ function buildPartnerReportHTML(periodText, partnersCount, paysList, expsList, t
     '<div class="box">صافي لكل شريك: <span class="currency">' + (perPartner||0).toLocaleString('en-US') + '</span></div>' +
   '</div>';
   const renderTable = (title, headers, rows)=>{
-    let s = '<h4>'+title+'</h4>';
-    if (rows.length){ s += '<table><thead><tr>'+ headers.map(h=>'<th>'+h+'</th>').join('') +'</tr></thead><tbody>' + rows.map(r=>'<tr>'+headers.map(h=>'<td>'+ (r[h]||'') +'</td>').join('') +'</tr>').join('') + '</tbody></table>'; }
+    let s = '<h4>'+h(title)+'</h4>';
+    if (rows.length){ s += '<table><thead><tr>'+ headers.map(hd=>'<th>'+h(hd)+'</th>').join('') +'</tr></thead><tbody>' + rows.map(r=>'<tr>'+headers.map(hd=>'<td>'+ h(r[hd]||'') +'</td>').join('') +'</tr>').join('') + '</tbody></table>'; }
     else { s += '<div>لا توجد بيانات ضمن الفترة</div>'; }
     return s;
   };
@@ -307,14 +315,14 @@ function exportData() {
 function buildStoreReportHTML(store, periodText, mappedSalesForExport, mappedPaymentsForExport, totalSales, totalPayments, remaining) {
   const baseUrl = (function () { try { return new URL('.', location.href).href; } catch (e) { return location.href.substring(0, location.href.lastIndexOf('/') + 1); } })();
   const fontUrl = baseUrl + 'fonts/Amiri-Regular.woff2';
-  function buildSalesRows() { let rows = ''; for (const s of mappedSalesForExport) { rows += '<tr>' + '<td>' + s.التاريخ + '</td>' + '<td>' + s.التفاصيل + '</td>' + '<td>' + s.الباقة + '</td>' + '<td>' + s.الكمية_أو_المبلغ + '</td>' + '<td class="currency">' + (s.الإجمالي || 0).toLocaleString('en-US') + '</td>' + '</tr>'; } return rows; }
-  function buildPaymentRows() { let rows = ''; for (const p of mappedPaymentsForExport) { rows += '<tr>' + '<td>' + p.التاريخ + '</td>' + '<td class="currency">' + (p.المبلغ || 0).toLocaleString('en-US') + '</td>' + '<td>' + (p.ملاحظات || '') + '</td>' + '</tr>'; } return rows; }
+  function buildSalesRows() { let rows = ''; for (const s of mappedSalesForExport) { rows += '<tr>' + '<td>' + h(s.التاريخ) + '</td>' + '<td>' + h(s.التفاصيل) + '</td>' + '<td>' + h(s.الباقة) + '</td>' + '<td>' + h(s.الكمية_أو_المبلغ) + '</td>' + '<td class="currency">' + (s.الإجمالي || 0).toLocaleString('en-US') + '</td>' + '</tr>'; } return rows; }
+  function buildPaymentRows() { let rows = ''; for (const p of mappedPaymentsForExport) { rows += '<tr>' + '<td>' + h(p.التاريخ) + '</td>' + '<td class="currency">' + (p.المبلغ || 0).toLocaleString('en-US') + '</td>' + '<td>' + h(p.ملاحظات || '') + '</td>' + '</tr>'; } return rows; }
   let html = '';
   html += '<!doctype html><html lang="ar" dir="rtl">';
-  html += '<head><meta charset="utf-8"><title>كشف حساب: ' + store.name + '</title>';
+  html += '<head><meta charset="utf-8"><title>كشف حساب: ' + h(store.name) + '</title>';
   html += '<style>' + "@font-face { font-family:'AmiriExport'; src: url('" + fontUrl + "') format('woff2'); font-weight:400; font-style:normal; }" +
     "body { font-family:'AmiriExport','Arial',sans-serif; padding:16px; }" + '.summary{ display:flex; gap:12px; justify-content:flex-end; margin:10px 0; }' + '.box{ border:1px solid #ddd; padding:8px 12px; }' + 'table{ width:100%; border-collapse:collapse; text-align:right; margin-top:8px; }' + 'th,td{ border:1px solid #ccc; padding:6px; }' + 'h3,h4{ margin:12px 0 6px; text-align:right; }' + '.actions{ display:flex; justify-content:flex-start; margin-bottom:12px; gap:8px; }' + '.actions button{ padding:8px 12px; border:1px solid #2c3e50; background:#2c3e50; color:#fff; border-radius:6px; font-size:14px; }' + '@media print { .actions{ display:none } }' + '@page{ size:A4; margin:12mm; }' + '</style></head>';
-  html += '<body>' + '<div class="actions"><button onclick="window.print()">حفظ التقرير كـ PDF</button></div>' + '<h3>كشف حساب: ' + store.name + '</h3>' + '<div>الفترة: ' + periodText + ' | تاريخ التصدير: ' + (new Date()).toISOString().slice(0, 10) + '</div>' + '<div class="summary">' + '<div class="box">إجمالي المبيعات: <span class="currency">' + (totalSales || 0).toLocaleString('en-US') + '</span></div>' + '<div class="box">إجمالي التسديدات: <span class="currency">' + (totalPayments || 0).toLocaleString('en-US') + '</span></div>' + '<div class="box">المتبقي: <span class="currency">' + (remaining || 0).toLocaleString('en-US') + '</span></div>' + '</div>';
+  html += '<body>' + '<div class="actions"><button onclick="window.print()">حفظ التقرير كـ PDF</button></div>' + '<h3>كشف حساب: ' + h(store.name) + '</h3>' + '<div>الفترة: ' + h(periodText) + ' | تاريخ التصدير: ' + (new Date()).toISOString().slice(0, 10) + '</div>' + '<div class="summary">' + '<div class="box">إجمالي المبيعات: <span class="currency">' + (totalSales || 0).toLocaleString('en-US') + '</span></div>' + '<div class="box">إجمالي التسديدات: <span class="currency">' + (totalPayments || 0).toLocaleString('en-US') + '</span></div>' + '<div class="box">المتبقي: <span class="currency">' + (remaining || 0).toLocaleString('en-US') + '</span></div>' + '</div>';
   html += '<h4>المبيعات</h4>';
   if (mappedSalesForExport.length > 0) html += '<table><thead><tr><th>التاريخ</th><th>التفاصيل</th><th>الباقة</th><th>الكمية/المبلغ</th><th>الإجمالي</th></tr></thead><tbody>' + buildSalesRows() + '</tbody></table>'; else html += '<div>لا توجد مبيعات ضمن الفترة</div>';
   html += '<h4>التسديدات</h4>';
@@ -348,13 +356,13 @@ function buildExpensesReportHTML(expensesRows, periodText) {
   html += '<head><meta charset="utf-8"><title>تقرير المصروفات</title>';
   html += '<style>' + "@font-face { font-family:'AmiriExport'; src: url('" + fontUrl + "') format('woff2'); font-weight:400; font-style:normal; }" +
     "body { font-family:'AmiriExport','Arial',sans-serif; padding:16px; }" + 'table{ width:100%; border-collapse:collapse; text-align:right; margin-top:8px; }' + 'th,td{ border:1px solid #ccc; padding:6px; }' + 'h3,h4{ margin:12px 0 6px; text-align:right; }' + '.summary{ display:flex; gap:12px; justify-content:flex-end; margin:10px 0; }' + '.box{ border:1px solid #ddd; padding:8px 12px; }' + '.actions{ display:flex; justify-content:flex-start; margin-bottom:12px; gap:8px; }' + '.actions button{ padding:8px 12px; border:1px solid #2c3e50; background:#2c3e50; color:#fff; border-radius:6px; font-size:14px; }' + '@media print { .actions{ display:none } }' + '@page{ size:A4; margin:12mm; }' + '</style></head>';
-  html += '<body>' + '<div class="actions"><button onclick="window.print()">حفظ التقرير كـ PDF</button></div>' + '<h3>تقرير المصروفات</h3>' + '<div>المدة: ' + periodText + ' | تاريخ التصدير: ' + (new Date()).toISOString().slice(0, 10) + '</div>';
+  html += '<body>' + '<div class="actions"><button onclick="window.print()">حفظ التقرير كـ PDF</button></div>' + '<h3>تقرير المصروفات</h3>' + '<div>المدة: ' + h(periodText) + ' | تاريخ التصدير: ' + (new Date()).toISOString().slice(0, 10) + '</div>';
   html += '<div class="summary"><div class="box">إجمالي المصروفات المصدّرة: <span class="currency">' + (overallTotal || 0).toLocaleString('en-US') + '</span></div></div>';
 
   const renderTable = (rows) => {
-    let s = '<table><thead><tr>' + '<th>التاريخ</th>' + '<th>المبلغ</th>' + '<th>نوع المصروف</th>' + '<th>ملاحظات</th>' + '<th>الحالة</th>' + '</tr></thead><tbody>';
+    let s = '<table><thead><tr>' + '<th>التاريخ</th>' + '<th>المبلغ</th>' + '<th>نوع المصروف</th>' + '<th>ملاحظات</th>' + '<th>الحالة</th>' + '</tr></thead><tbody>'; 
     for (const e of rows) {
-      s += '<tr>' + '<td>' + (e['التاريخ'] || '') + '</td>' + '<td class="currency">' + (Number(e['المبلغ'] || 0).toLocaleString('en-US')) + '</td>' + '<td>' + (e['نوع المصروف'] || '') + '</td>' + '<td>' + (e['ملاحظات'] || '') + '</td>' + '<td>' + (e['الحالة'] || '') + '</td>' + '</tr>';
+      s += '<tr>' + '<td>' + h(e['التاريخ'] || '') + '</td>' + '<td class="currency">' + (Number(e['المبلغ'] || 0).toLocaleString('en-US')) + '</td>' + '<td>' + h(e['نوع المصروف'] || '') + '</td>' + '<td>' + h(e['ملاحظات'] || '') + '</td>' + '<td>' + h(e['الحالة'] || '') + '</td>' + '</tr>';
     }
     s += '</tbody></table>';
     return s;
@@ -366,7 +374,7 @@ function buildExpensesReportHTML(expensesRows, periodText) {
       if (idx > 0) html += '<div style="page-break-before: always"></div>';
       const rows = (monthMap.get(mKey) || []).slice().sort((a,b)=> String(a['التاريخ']).localeCompare(String(b['التاريخ'])));
       const monthTotal = rows.reduce((sum, r) => sum + Number(r['المبلغ'] || 0), 0);
-      html += '<h4>مصروفات شهر ' + mKey + '</h4>';
+      html += '<h4>مصروفات شهر ' + h(mKey) + '</h4>';
       html += '<div class="summary"><div class="box">إجمالي الشهر: <span class="currency">' + (monthTotal || 0).toLocaleString('en-US') + '</span></div></div>';
       html += renderTable(rows);
     });
@@ -375,7 +383,7 @@ function buildExpensesReportHTML(expensesRows, periodText) {
     const monthKey = uniqueMonths[0] || '';
     const monthTotal = rows.reduce((sum, r) => sum + Number(r['المبلغ'] || 0), 0);
     if (monthKey) {
-      html += '<h4>مصروفات شهر ' + monthKey + '</h4>';
+      html += '<h4>مصروفات شهر ' + h(monthKey) + '</h4>';
       html += '<div class="summary"><div class="box">إجمالي الشهر: <span class="currency">' + (monthTotal || 0).toLocaleString('en-US') + '</span></div></div>';
     }
     html += renderTable(rows);
@@ -585,7 +593,8 @@ function generatePartnerReportData() {
 }
 
 function getPeriodRange() {
-  const f = document.getElementById('reportFromDate'); const t = document.getElementById('reportToDate');
+  const f = document.getElementById('reportsFromDate');
+  const t = document.getElementById('reportsToDate');
   const fromDate = formatDateEn((f && f.value) || moment().startOf('month').format('YYYY-MM-DD'));
   const toDate = formatDateEn((t && t.value) || moment().format('YYYY-MM-DD'));
   return { fromDate, toDate };

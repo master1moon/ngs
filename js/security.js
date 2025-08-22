@@ -248,7 +248,7 @@
 
     // تطبيق إعدادات الأمان عند التحميل
     document.addEventListener('DOMContentLoaded', function() {
-        // addSecurityHeaders(); // مؤقتاً معطل لتجنب تعارض مع المكتبات الخارجية
+        addSecurityHeaders(); // تم التفعيل مع إبقاء سياسة مرنة مؤقتًا
     });
 
 })();
