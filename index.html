@@ -3746,21 +3746,6 @@
                     exportExpensesData: typeof window.exportExpensesData,
                     exportReportsData: typeof exportReportsData
                 });
-                try {
-                    function rebindActionHandlers(){
-                        const bind = (id, fn)=>{ const el = document.getElementById(id); if (el && typeof fn === 'function') { el.onclick = fn; } };
-                        bind('savePackageBtn', window.savePackage);
-                        bind('saveInventoryBtn', window.saveInventory);
-                        bind('saveStoreBtn', window.saveStore);
-                        bind('saveExpenseBtn', window.saveExpense);
-                        bind('saveSaleBtn', window.saveSale);
-                        bind('savePaymentBtn', window.savePayment);
-                    }
-                    // أعد الربط بعد تحميل الملفات الخارجية
-                    rebindActionHandlers();
-                    window.addEventListener('load', rebindActionHandlers, { once: true });
-                    setTimeout(rebindActionHandlers, 1000);
-                } catch(_) {}
             }, 600);
             
             // توليد تقارير
