@@ -2304,7 +2304,7 @@
             const reason = document.getElementById('saleReason').value;
             const quantity = parseFormattedNumber(document.getElementById('saleQuantity').value) || 0;
             const amount = parseFormattedNumber(document.getElementById('saleAmount').value) || 0;
-            const date = document.getElementById('saleDate').value || today;
+            const date = formatDateEn(document.getElementById('saleDate').value);
             
             if (!storeId || (!packageId && !reason)) {
                 showNotification('يرجى ملء جميع الحقول المطلوبة', 'error');
@@ -2445,7 +2445,7 @@
             document.getElementById('saleReason').value = sale.reason || '';
             document.getElementById('saleQuantity').value = formatNumber(sale.quantity) || '';
             document.getElementById('saleAmount').value = formatNumber(sale.amount) || '';
-            document.getElementById('saleDate').value = sale.date;
+            document.getElementById('saleDate').value = formatDateEn(sale.date);
             document.getElementById('customReasonGroup').style.display = isCustom ? 'block' : 'none';
             document.getElementById('quantityGroup').style.display = isCustom ? 'none' : 'block';
             document.getElementById('amountGroup').style.display = isCustom ? 'block' : 'none';
@@ -2494,7 +2494,7 @@
             const storeId = document.getElementById('paymentStoreId').value;
             const amount = parseFormattedNumber(document.getElementById('paymentAmount').value);
             const notes = document.getElementById('paymentNotes').value;
-            const date = document.getElementById('paymentDate').value || today;
+            const date = formatDateEn(document.getElementById('paymentDate').value);
             
             if (!storeId || isNaN(amount) || amount <= 0) {
                 showNotification('يرجى ملء جميع الحقول المطلوبة', 'error');
@@ -2543,7 +2543,7 @@
             document.getElementById('paymentStoreId').value = payment.storeId;
             document.getElementById('paymentAmount').value = formatNumber(payment.amount);
             document.getElementById('paymentNotes').value = payment.notes || '';
-            document.getElementById('paymentDate').value = payment.date;
+            document.getElementById('paymentDate').value = formatDateEn(payment.date);
             
             const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
             modal.show();
@@ -2590,7 +2590,7 @@
             document.getElementById('retailPrice').value = pkg.retailPrice ? formatNumber(pkg.retailPrice) : '';
             document.getElementById('wholesalePrice').value = pkg.wholesalePrice ? formatNumber(pkg.wholesalePrice) : '';
             document.getElementById('distributorPrice').value = pkg.distributorPrice ? formatNumber(pkg.distributorPrice) : '';
-            document.getElementById('packageDate').value = pkg.createdAt || today;
+            document.getElementById('packageDate').value = formatDateEn(pkg.createdAt || '');
             
             const modal = new bootstrap.Modal(document.getElementById('packageModal'));
             modal.show();
@@ -2614,7 +2614,7 @@
             const retailPrice = parseFormattedNumber(document.getElementById('retailPrice').value) || null;
             const wholesalePrice = parseFormattedNumber(document.getElementById('wholesalePrice').value) || null;
             const distributorPrice = parseFormattedNumber(document.getElementById('distributorPrice').value) || null;
-            const date = document.getElementById('packageDate').value || today;
+            const date = formatDateEn(document.getElementById('packageDate').value);
             
             if (!name) {
                 showNotification('يرجى إدخال اسم الباقة', 'error');
@@ -2694,7 +2694,7 @@
             document.getElementById('inventoryModalTitle').textContent = 'تعديل الكمية';
             document.getElementById('inventoryId').value = item.id;
             document.getElementById('inventoryQuantity').value = formatNumber(item.quantity);
-            document.getElementById('inventoryDate').value = item.createdAt || today;
+            document.getElementById('inventoryDate').value = formatDateEn(item.createdAt || '');
             
             const modal = new bootstrap.Modal(document.getElementById('inventoryModal'));
             modal.show();
@@ -2716,7 +2716,7 @@
             const id = document.getElementById('inventoryId').value;
             const packageId = document.getElementById('inventoryPackage').value;
             const quantity = parseFormattedNumber(document.getElementById('inventoryQuantity').value);
-            const date = document.getElementById('inventoryDate').value || today;
+            const date = formatDateEn(document.getElementById('inventoryDate').value);
             
             if (!packageId || isNaN(quantity) || quantity <= 0) {
                 showNotification('يرجى ملء جميع الحقول المطلوبة', 'error');
@@ -2773,7 +2773,7 @@
             document.getElementById('storeId').value = store.id;
             document.getElementById('storeName').value = store.name;
             document.getElementById('storePriceType').value = store.priceType;
-            document.getElementById('storeDate').value = store.createdAt || today;
+            document.getElementById('storeDate').value = formatDateEn(store.createdAt || '');
             
             const modal = new bootstrap.Modal(document.getElementById('storeModal'));
             modal.show();
@@ -2797,7 +2797,7 @@
             const id = document.getElementById('storeId').value;
             const name = document.getElementById('storeName').value;
             const priceType = document.getElementById('storePriceType').value;
-            const date = document.getElementById('storeDate').value || today;
+            const date = formatDateEn(document.getElementById('storeDate').value);
             
             if (!name) {
                 showNotification('يرجى إدخال اسم المحل', 'error');
@@ -2865,7 +2865,7 @@
             if (customInp) customInp.value = '';
             document.getElementById('expenseAmount').value = formatNumber(expense.amount);
             document.getElementById('expenseNotes').value = expense.notes || '';
-            document.getElementById('expenseDate').value = expense.date || today;
+            document.getElementById('expenseDate').value = formatDateEn(expense.date || '');
             document.getElementById('addLater').checked = expense.addLater || false;
             
             const modal = new bootstrap.Modal(document.getElementById('expenseModal'));
@@ -2890,7 +2890,7 @@
             const type = document.getElementById('expenseType').value;
             const amount = parseFormattedNumber(document.getElementById('expenseAmount').value) || 0;
             const notes = document.getElementById('expenseNotes').value;
-            const date = document.getElementById('expenseDate').value || today;
+            const date = formatDateEn(document.getElementById('expenseDate').value);
             const addLater = document.getElementById('addLater').checked;
             
             if (!type) {
@@ -3838,12 +3838,7 @@
             document.getElementById('saveSaleBtn').addEventListener('click', saveSale);
             document.getElementById('savePaymentBtn').addEventListener('click', savePayment);
             
-            // تعيين تاريخ اليوم كافتراضي لحقول التاريخ
-            document.querySelectorAll('input[type="date"]').forEach(input => {
-                if (!input.value) {
-                    input.value = today;
-                }
-            });
+            // ترك قيم التاريخ كما هي دون فرض تاريخ اليوم افتراضياً
             
             // اختصارات سريعة على لوحة التحكم
             const qa = {
