@@ -1571,7 +1571,7 @@
                                 payments: Array.isArray(parsedData.payments) ? parsedData.payments.filter(item => item && typeof item === 'object') : [],
                                 trash: Array.isArray(parsedData.trash) ? parsedData.trash.filter(item => item && typeof item === 'object') : []
                             };
-                            showNotification('تم تحميل البيانات بنجاح', 'success');
+                            console.log('تم تحميل البيانات بنجاح');
                         } else {
                             throw new Error('تنسيق البيانات غير صحيح');
                         }
@@ -1579,17 +1579,17 @@
                         console.error('خطأ في تحليل البيانات المحفوظة:', parseError);
                         // حذف البيانات التالفة
                         localStorage.removeItem('networkCardsData');
-                        showNotification('حدث خطأ في تحميل البيانات، سيتم استخدام بيانات جديدة', 'error');
+                        console.log('حدث خطأ في تحميل البيانات، سيتم استخدام بيانات جديدة');
                     }
                 } else {
                     // إذا لم توجد بيانات محفوظة، استخدم البيانات الافتراضية
-                    showNotification('لا توجد بيانات محفوظة، سيتم استخدام بيانات جديدة', 'info');
+                    console.log('لا توجد بيانات محفوظة، سيتم استخدام بيانات جديدة');
                 }
                 
 
             } catch (error) {
                 console.error('خطأ في تحميل البيانات:', error);
-                showNotification('حدث خطأ في تحميل البيانات، سيتم استخدام بيانات جديدة', 'error');
+                console.log('حدث خطأ في تحميل البيانات، سيتم استخدام بيانات جديدة');
                 // إعادة تعيين البيانات إلى القيم الافتراضية
                 data = {
                     packages: [],
@@ -1637,7 +1637,7 @@
                 
                 // حفظ البيانات
                 localStorage.setItem('networkCardsData', JSON.stringify(validData));
-                showNotification('تم حفظ البيانات بنجاح', 'success');
+                console.log('تم حفظ البيانات بنجاح');
                 
                 // المزامنة مع GitHub إذا كانت مفعلة
                 if (typeof githubSettings !== 'undefined' && githubSettings && githubSettings.autoSync && githubSettings.token && githubSettings.gistId) {
@@ -1651,7 +1651,7 @@
                 }
             } catch (error) {
                 console.error('خطأ في حفظ البيانات:', error);
-                showNotification('حدث خطأ في حفظ البيانات: ' + error.message, 'error');
+                console.log('حدث خطأ في حفظ البيانات: ' + error.message);
             }
         }
         
