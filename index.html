@@ -1413,7 +1413,7 @@
     <script>
         // تهيئة التواريخ باللغة العربية
         moment.locale('ar');
-        const today = moment().format('YYYY-MM-DD');
+        const today = (typeof toEnglishDigits==='function') ? toEnglishDigits(moment().format('YYYY-MM-DD')) : moment().format('YYYY-MM-DD');
         document.getElementById('currentDate').textContent = toEnglishDigits(moment().format('YYYY-MM-DD'));
         document.getElementById('currentMonth').textContent = toEnglishDigits(moment().format('MMMM'));
         
@@ -1681,7 +1681,7 @@
         function getDashboardPeriodRange() {
             const select = document.getElementById('dashboardPeriod');
             const val = select ? select.value : 'from_start';
-            const today = moment().format('YYYY-MM-DD');
+            const today = (typeof toEnglishDigits==='function') ? toEnglishDigits(moment().format('YYYY-MM-DD')) : moment().format('YYYY-MM-DD');
             if (val === 'day') {
                 const from = moment().startOf('day').format('YYYY-MM-DD');
                 return { from, to: today };
