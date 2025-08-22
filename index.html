@@ -3957,6 +3957,29 @@
                 });
             }
 
+            // إعادة ربط نظيفة بعد تحميل جميع السكربتات لضمان استخدام دوال الوحدات ومنع الازدواج
+            window.addEventListener('load', function(){
+                try {
+                    const bindings = [
+                        ['savePackageBtn', (typeof savePackage==='function') ? savePackage : null, (typeof window.savePackage==='function') ? window.savePackage : null],
+                        ['saveInventoryBtn', (typeof saveInventory==='function') ? saveInventory : null, (typeof window.saveInventory==='function') ? window.saveInventory : null],
+                        ['saveStoreBtn', (typeof saveStore==='function') ? saveStore : null, (typeof window.saveStore==='function') ? window.saveStore : null],
+                        ['saveExpenseBtn', (typeof saveExpense==='function') ? saveExpense : null, (typeof window.saveExpense==='function') ? window.saveExpense : null],
+                        ['saveSaleBtn', (typeof saveSale==='function') ? saveSale : null, (typeof window.saveSale==='function') ? window.saveSale : null],
+                        ['savePaymentBtn', (typeof savePayment==='function') ? savePayment : null, (typeof window.savePayment==='function') ? window.savePayment : null]
+                    ];
+                    bindings.forEach(([id, oldFn, newFn]) => {
+                        const el = document.getElementById(id);
+                        if (!el) return;
+                        try { if (typeof oldFn === 'function') el.removeEventListener('click', oldFn); } catch(_) {}
+                        if (typeof newFn === 'function') {
+                            // استخدم onclick لضمان مستمع واحد فقط
+                            el.onclick = newFn;
+                        }
+                    });
+                } catch(_) {}
+            }, { once: true });
+
             // تهيئة اقتراحات أنواع المصروفات (chips)
             const defaultExpenseTypes = [
                 'كهرباء','انترنت ADSL','انترنت فايبر','انترنت ستار لينك','صيانة','سويتش',
