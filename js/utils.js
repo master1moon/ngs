@@ -35,6 +35,57 @@ function formatDateEn(dateStr) {
   return m;
 }
 
+// دوال مساعدة متخصصة للحقول المختلفة لضمان الاتساق ومنع الأخطاء
+function getDefaultDateForAdd() { return (typeof moment !== 'undefined') ? moment().format('YYYY-MM-DD') : (new Date()).toISOString().slice(0,10); }
+
+function setSaleDateInput(value) {
+  const el = document.getElementById('saleDate'); if (!el) return;
+  el.value = value ? formatDateEn(value) : '';
+}
+function readSaleDateInput() {
+  const el = document.getElementById('saleDate'); return el ? formatDateEn(el.value) : '';
+}
+
+function setPaymentDateInput(value) {
+  const el = document.getElementById('paymentDate'); if (!el) return;
+  el.value = value ? formatDateEn(value) : '';
+}
+function readPaymentDateInput() {
+  const el = document.getElementById('paymentDate'); return el ? formatDateEn(el.value) : '';
+}
+
+function setExpenseDateInput(value) {
+  const el = document.getElementById('expenseDate'); if (!el) return;
+  el.value = value ? formatDateEn(value) : '';
+}
+function readExpenseDateInput() {
+  const el = document.getElementById('expenseDate'); return el ? formatDateEn(el.value) : '';
+}
+
+function setStoreDateInput(value) {
+  const el = document.getElementById('storeDate'); if (!el) return;
+  el.value = value ? formatDateEn(value) : '';
+}
+function readStoreDateInput() {
+  const el = document.getElementById('storeDate'); return el ? formatDateEn(el.value) : '';
+}
+
+function setInventoryDateInput(value) {
+  const el = document.getElementById('inventoryDate'); if (!el) return;
+  el.value = value ? formatDateEn(value) : '';
+}
+function readInventoryDateInput() {
+  const el = document.getElementById('inventoryDate'); return el ? formatDateEn(el.value) : '';
+}
+
+function setPackageDateInput(value) {
+  const el = document.getElementById('packageDate'); if (!el) return;
+  el.value = value ? formatDateEn(value) : '';
+}
+function readPackageDateInput() {
+  const el = document.getElementById('packageDate'); return el ? formatDateEn(el.value) : '';
+}
+
 // تطبيق تنسيق الأرقام على جميع حقول الإدخال ذات الصنف formatted-input
 function setupFormattedInputs() {
   document.querySelectorAll('.formatted-input').forEach(input => {
@@ -179,4 +230,12 @@ if (typeof window !== 'undefined') {
   window.formatDateEn = formatDateEn;
   window.showNotification = showNotification;
   window.switchSection = switchSection;
+  // expose date helpers
+  window.getDefaultDateForAdd = getDefaultDateForAdd;
+  window.setSaleDateInput = setSaleDateInput; window.readSaleDateInput = readSaleDateInput;
+  window.setPaymentDateInput = setPaymentDateInput; window.readPaymentDateInput = readPaymentDateInput;
+  window.setExpenseDateInput = setExpenseDateInput; window.readExpenseDateInput = readExpenseDateInput;
+  window.setStoreDateInput = setStoreDateInput; window.readStoreDateInput = readStoreDateInput;
+  window.setInventoryDateInput = setInventoryDateInput; window.readInventoryDateInput = readInventoryDateInput;
+  window.setPackageDateInput = setPackageDateInput; window.readPackageDateInput = readPackageDateInput;
 }

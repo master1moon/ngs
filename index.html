@@ -2300,7 +2300,7 @@
             document.getElementById('saleReason').value = '';
             document.getElementById('saleQuantity').value = '';
             document.getElementById('saleAmount').value = '';
-            document.getElementById('saleDate').value = '';
+            if (typeof setSaleDateInput === 'function') setSaleDateInput(''); else document.getElementById('saleDate').value = '';
             document.getElementById('customReasonGroup').style.display = 'none';
             document.getElementById('amountGroup').style.display = 'none';
             
@@ -2457,7 +2457,7 @@
             document.getElementById('saleReason').value = sale.reason || '';
             document.getElementById('saleQuantity').value = formatNumber(sale.quantity) || '';
             document.getElementById('saleAmount').value = formatNumber(sale.amount) || '';
-            document.getElementById('saleDate').value = formatDateEn(sale.date);
+            if (typeof setSaleDateInput === 'function') setSaleDateInput(sale.date); else document.getElementById('saleDate').value = formatDateEn(sale.date);
             document.getElementById('customReasonGroup').style.display = isCustom ? 'block' : 'none';
             document.getElementById('quantityGroup').style.display = isCustom ? 'none' : 'block';
             document.getElementById('amountGroup').style.display = isCustom ? 'block' : 'none';
@@ -2494,7 +2494,7 @@
             document.getElementById('paymentStoreId').value = storeId;
             document.getElementById('paymentAmount').value = '';
             document.getElementById('paymentNotes').value = '';
-            document.getElementById('paymentDate').value = '';
+            if (typeof setPaymentDateInput === 'function') setPaymentDateInput(''); else document.getElementById('paymentDate').value = '';
             
             const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
             modal.show();
@@ -2555,7 +2555,7 @@
             document.getElementById('paymentStoreId').value = payment.storeId;
             document.getElementById('paymentAmount').value = formatNumber(payment.amount);
             document.getElementById('paymentNotes').value = payment.notes || '';
-            document.getElementById('paymentDate').value = formatDateEn(payment.date);
+            if (typeof setPaymentDateInput === 'function') setPaymentDateInput(payment.date); else document.getElementById('paymentDate').value = formatDateEn(payment.date);
             
             const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
             modal.show();
@@ -2585,7 +2585,7 @@
             document.getElementById('retailPrice').value = '';
             document.getElementById('wholesalePrice').value = '';
             document.getElementById('distributorPrice').value = '';
-            document.getElementById('packageDate').value = '';
+            if (typeof setPackageDateInput === 'function') setPackageDateInput(''); else document.getElementById('packageDate').value = '';
             
             const modal = new bootstrap.Modal(document.getElementById('packageModal'));
             modal.show();
@@ -2602,7 +2602,7 @@
             document.getElementById('retailPrice').value = pkg.retailPrice ? formatNumber(pkg.retailPrice) : '';
             document.getElementById('wholesalePrice').value = pkg.wholesalePrice ? formatNumber(pkg.wholesalePrice) : '';
             document.getElementById('distributorPrice').value = pkg.distributorPrice ? formatNumber(pkg.distributorPrice) : '';
-            document.getElementById('packageDate').value = formatDateEn(pkg.createdAt || '');
+            if (typeof setPackageDateInput === 'function') setPackageDateInput(pkg.createdAt || ''); else document.getElementById('packageDate').value = formatDateEn(pkg.createdAt || '');
             
             const modal = new bootstrap.Modal(document.getElementById('packageModal'));
             modal.show();
@@ -2681,7 +2681,7 @@
             document.getElementById('inventoryModalTitle').textContent = 'إضافة كمية جديدة';
             document.getElementById('inventoryId').value = '';
             document.getElementById('inventoryQuantity').value = '';
-            document.getElementById('inventoryDate').value = '';
+            if (typeof setInventoryDateInput === 'function') setInventoryDateInput(''); else document.getElementById('inventoryDate').value = '';
             
             const modal = new bootstrap.Modal(document.getElementById('inventoryModal'));
             modal.show();
@@ -2706,7 +2706,7 @@
             document.getElementById('inventoryModalTitle').textContent = 'تعديل الكمية';
             document.getElementById('inventoryId').value = item.id;
             document.getElementById('inventoryQuantity').value = formatNumber(item.quantity);
-            document.getElementById('inventoryDate').value = formatDateEn(item.createdAt || '');
+            if (typeof setInventoryDateInput === 'function') setInventoryDateInput(item.createdAt || ''); else document.getElementById('inventoryDate').value = formatDateEn(item.createdAt || '');
             
             const modal = new bootstrap.Modal(document.getElementById('inventoryModal'));
             modal.show();
@@ -2770,7 +2770,7 @@
             document.getElementById('storeId').value = '';
             document.getElementById('storeName').value = '';
             document.getElementById('storePriceType').value = 'retail';
-            document.getElementById('storeDate').value = '';
+            if (typeof setStoreDateInput === 'function') setStoreDateInput(''); else document.getElementById('storeDate').value = '';
             
             const modal = new bootstrap.Modal(document.getElementById('storeModal'));
             modal.show();
@@ -2785,7 +2785,7 @@
             document.getElementById('storeId').value = store.id;
             document.getElementById('storeName').value = store.name;
             document.getElementById('storePriceType').value = store.priceType;
-            document.getElementById('storeDate').value = formatDateEn(store.createdAt || '');
+            if (typeof setStoreDateInput === 'function') setStoreDateInput(store.createdAt || ''); else document.getElementById('storeDate').value = formatDateEn(store.createdAt || '');
             
             const modal = new bootstrap.Modal(document.getElementById('storeModal'));
             modal.show();
@@ -2858,7 +2858,7 @@
             if (customInp) customInp.value = '';
             document.getElementById('expenseAmount').value = '';
             document.getElementById('expenseNotes').value = '';
-            document.getElementById('expenseDate').value = '';
+            if (typeof setExpenseDateInput === 'function') setExpenseDateInput(''); else document.getElementById('expenseDate').value = '';
             document.getElementById('addLater').checked = false;
             
             const modal = new bootstrap.Modal(document.getElementById('expenseModal'));
