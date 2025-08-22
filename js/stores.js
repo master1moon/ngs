@@ -64,7 +64,7 @@ function showStoreDetails(storeId) {
       <td>${isCustom ? ('<span class="currency">' + formatNumber(sale.amount) + '</span>') : esc(sale.quantity)}</td>
       <td class="currency">${formatNumber(sale.total)}</td>
       <td class="action-buttons">
-        <button class="btn btn-sm btn.warning edit-sale" data-id="${sale.id}"><i class="fas fa-edit"></i></button>
+        <button class="btn btn-sm btn-warning edit-sale" data-id="${sale.id}"><i class="fas fa-edit"></i></button>
         <button class="btn btn-sm btn-danger delete-sale" data-id="${sale.id}"><i class="fas fa-trash"></i></button>
       </td>`;
     salesTable.appendChild(row);
@@ -77,7 +77,7 @@ function showStoreDetails(storeId) {
       <td class="currency">${formatNumber(payment.amount)}</td>
       <td>${esc(payment.notes || '')}</td>
       <td class="action-buttons">
-        <button class="btn btn-sm btn.warning edit-payment" data-id="${payment.id}"><i class="fas fa-edit"></i></button>
+        <button class="btn btn-sm btn-warning edit-payment" data-id="${payment.id}"><i class="fas fa-edit"></i></button>
         <button class="btn btn-sm btn-danger delete-payment" data-id="${payment.id}"><i class="fas fa-trash"></i></button>
       </td>`;
     paymentsTable.appendChild(row);

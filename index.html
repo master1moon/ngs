@@ -3883,10 +3883,21 @@
                 const sel = document.getElementById('selectStoreSelect');
                 const storeId = sel.value;
                 if (!storeId) { showNotification('يرجى اختيار محل', 'error'); return; }
-                selectStoreModal.hide();
-                if (nextAction === 'sale') addSale(storeId);
-                else if (nextAction === 'payment') addPayment(storeId);
-                nextAction = null;
+                if (selectStoreModal) {
+                    const onHidden = () => {
+                        // بعد إزالة الخلفية بالكامل افتح المودال التالي
+                        if (nextAction === 'sale') addSale(storeId);
+                        else if (nextAction === 'payment') addPayment(storeId);
+                        nextAction = null;
+                        selectStoreModalEl.removeEventListener('hidden.bs.modal', onHidden);
+                    };
+                    selectStoreModalEl.addEventListener('hidden.bs.modal', onHidden, { once: true });
+                    selectStoreModal.hide();
+                } else {
+                    if (nextAction === 'sale') addSale(storeId);
+                    else if (nextAction === 'payment') addPayment(storeId);
+                    nextAction = null;
+                }
             });
 
             if (qa.sale) qa.sale.addEventListener('click', () => openSelectStore('sale'));
