@@ -251,15 +251,19 @@ function renderExpensesTable() {
     </tr>`;
     tableRoot.insertBefore(thead, table);
     table.innerHTML = '';
+
+    // helper escape
+    const esc = (v)=>{ try{ return (window.SecurityUtils && window.SecurityUtils.escapeHtml) ? window.SecurityUtils.escapeHtml(v) : String(v||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'}[m])); }catch{ return String(v||''); } };
+
     pageItems.forEach(expense => {
       const row = document.createElement('tr'); row.dataset.id = expense.id;
       const selected = expensesSelection.has(expense.id);
       row.innerHTML = `
         <td><input type="checkbox" class="exp-row-select" data-id="${expense.id}" ${selected?'checked':''}></td>
-        <td class="cell-edit" data-key="date">${expense.date}</td>
-        <td class="cell-edit" data-key="type">${expense.type}</td>
+        <td class="cell-edit" data-key="date">${esc(expense.date)}</td>
+        <td class="cell-edit" data-key="type">${esc(expense.type)}</td>
         <td class="cell-edit" data-key="amount"><span class="currency">${formatNumber(expense.amount)}</span></td>
-        <td class="cell-edit" data-key="notes">${expense.notes || ''}</td>
+        <td class="cell-edit" data-key="notes">${esc(expense.notes || '')}</td>
         <td class="cell-edit" data-key="addLater">${expense.addLater ? '<span class="badge bg-warning">لاحقًا</span>' : '<span class="badge bg-success">مدفوع</span>'}</td>
         <td class="action-buttons">
           <button class="btn btn-sm btn-warning edit-expense" data-id="${expense.id}"><i class="fas fa-edit"></i></button>

@@ -3152,10 +3152,10 @@
                 let rows = '';
                 for (const s of mappedSalesForExport) {
                     rows += '<tr>' +
-                        '<td>' + s.التاريخ + '</td>' +
-                        '<td>' + s.التفاصيل + '</td>' +
-                        '<td>' + s.الباقة + '</td>' +
-                        '<td>' + s.الكمية_أو_المبلغ + '</td>' +
+                        '<td>' + _h(s.التاريخ) + '</td>' +
+                        '<td>' + _h(s.التفاصيل) + '</td>' +
+                        '<td>' + _h(s.الباقة) + '</td>' +
+                        '<td>' + _h(s.الكمية_أو_المبلغ) + '</td>' +
                         '<td>' + (s.الإجمالي || 0).toLocaleString('en-US') + ' ر.ي</td>' +
                     '</tr>';
                 }
@@ -3166,9 +3166,9 @@
                 let rows = '';
                 for (const p of mappedPaymentsForExport) {
                     rows += '<tr>' +
-                        '<td>' + p.التاريخ + '</td>' +
+                        '<td>' + _h(p.التاريخ) + '</td>' +
                         '<td>' + (p.المبلغ || 0).toLocaleString('en-US') + ' ر.ي</td>' +
-                        '<td>' + (p.ملاحظات || '') + '</td>' +
+                        '<td>' + _h(p.ملاحظات || '') + '</td>' +
                     '</tr>';
                 }
                 return rows;
@@ -3194,8 +3194,9 @@
                 '</style></head>';
             html += '<body>';
             html += '<div class="actions"><button onclick="window.print()">حفظ التقرير كـ PDF</button></div>';
-            html += '<h3>كشف حساب: ' + store.name + '</h3>';
-            html += '<div>الفترة: ' + periodText + ' | تاريخ التصدير: ' + (new Date()).toISOString().slice(0,10) + '</div>';
+            const _h = (v)=> (window.SecurityUtils && window.SecurityUtils.escapeHtml) ? window.SecurityUtils.escapeHtml(v) : String(v||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'}[m]));
+            html += '<h3>كشف حساب: ' + _h(store.name) + '</h3>';
+            html += '<div>الفترة: ' + _h(periodText) + ' | تاريخ التصدير: ' + (new Date()).toISOString().slice(0,10) + '</div>';
             html += '<div class="summary">' +
                         '<div class="box">إجمالي المبيعات: ' + (totalSales||0).toLocaleString('en-US') + ' ر.ي</div>' +
                         '<div class="box">إجمالي التسديدات: ' + (totalPayments||0).toLocaleString('en-US') + ' ر.ي</div>' +
