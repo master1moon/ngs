@@ -2614,7 +2614,7 @@
             const retailPrice = parseFormattedNumber(document.getElementById('retailPrice').value) || null;
             const wholesalePrice = parseFormattedNumber(document.getElementById('wholesalePrice').value) || null;
             const distributorPrice = parseFormattedNumber(document.getElementById('distributorPrice').value) || null;
-            const date = document.getElementById('packageDate').value || today;
+            const date = (typeof formatDateEn==='function') ? formatDateEn(document.getElementById('packageDate').value || today) : (document.getElementById('packageDate').value || today);
             
             if (!name) {
                 showNotification('يرجى إدخال اسم الباقة', 'error');
@@ -2716,7 +2716,7 @@
             const id = document.getElementById('inventoryId').value;
             const packageId = document.getElementById('inventoryPackage').value;
             const quantity = parseFormattedNumber(document.getElementById('inventoryQuantity').value);
-            const date = document.getElementById('inventoryDate').value || today;
+            const date = (typeof formatDateEn==='function') ? formatDateEn(document.getElementById('inventoryDate').value || today) : (document.getElementById('inventoryDate').value || today);
             
             if (!packageId || isNaN(quantity) || quantity <= 0) {
                 showNotification('يرجى ملء جميع الحقول المطلوبة', 'error');
@@ -2797,7 +2797,7 @@
             const id = document.getElementById('storeId').value;
             const name = document.getElementById('storeName').value;
             const priceType = document.getElementById('storePriceType').value;
-            const date = document.getElementById('storeDate').value || today;
+            const date = (typeof formatDateEn==='function') ? formatDateEn(document.getElementById('storeDate').value || today) : (document.getElementById('storeDate').value || today);
             
             if (!name) {
                 showNotification('يرجى إدخال اسم المحل', 'error');

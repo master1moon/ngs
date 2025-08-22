@@ -159,7 +159,7 @@ function saveInventory() {
   const id = document.getElementById('inventoryId').value;
   const packageId = document.getElementById('inventoryPackage').value;
   const quantity = parseFormattedNumber(document.getElementById('inventoryQuantity').value);
-  const date = document.getElementById('inventoryDate').value || today;
+  const date = (typeof formatDateEn==='function') ? formatDateEn(document.getElementById('inventoryDate').value || today) : (document.getElementById('inventoryDate').value || today);
   if (!packageId || isNaN(quantity) || quantity <= 0) { showNotification('يرجى ملء جميع الحقول المطلوبة', 'error'); return; }
   if (id) {
     const item = data.inventory.find(i => i.id === id);
