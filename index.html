@@ -3769,16 +3769,16 @@
             
             // إضافة معالجات الأحداث للأزرار
             document.getElementById('addPackageBtn').addEventListener('click', addPackage);
-            document.getElementById('savePackageBtn').addEventListener('click', savePackage);
+            document.getElementById('savePackageBtn').addEventListener('click', () => (window.savePackage || savePackage)());
             
             document.getElementById('addInventoryBtn').addEventListener('click', addInventory);
-            document.getElementById('saveInventoryBtn').addEventListener('click', saveInventory);
+            document.getElementById('saveInventoryBtn').addEventListener('click', () => (window.saveInventory || saveInventory)());
             
             document.getElementById('addStoreBtn').addEventListener('click', addStore);
-            document.getElementById('saveStoreBtn').addEventListener('click', saveStore);
+            document.getElementById('saveStoreBtn').addEventListener('click', () => (window.saveStore || saveStore)());
             
             document.getElementById('addExpenseBtn').addEventListener('click', addExpense);
-            document.getElementById('saveExpenseBtn').addEventListener('click', saveExpense);
+            document.getElementById('saveExpenseBtn').addEventListener('click', () => (window.saveExpense || saveExpense)());
             
             const _genBtn = document.getElementById('generateReportBtn');
             if (_genBtn) _genBtn.addEventListener('click', function() {
@@ -3836,8 +3836,8 @@
             }
             
             // معالجة أزرار الحفظ في نماذج البيع والتسديد
-            document.getElementById('saveSaleBtn').addEventListener('click', saveSale);
-            document.getElementById('savePaymentBtn').addEventListener('click', savePayment);
+            document.getElementById('saveSaleBtn').addEventListener('click', () => (window.saveSale || saveSale)());
+            document.getElementById('savePaymentBtn').addEventListener('click', () => (window.savePayment || savePayment)());
             
             // تعيين تاريخ اليوم كافتراضي لحقول التاريخ
             document.querySelectorAll('input[type="date"]').forEach(input => {
