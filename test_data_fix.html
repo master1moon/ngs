@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار إصلاح البيانات</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>اختبار إصلاح البيانات</h1>
+        
+        <div class="test-section info">
+            <h3>حالة الاختبار</h3>
+            <p>هذا الملف لاختبار أن دوال حفظ وتحميل البيانات تعمل بشكل صحيح بعد الإصلاحات.</p>
+        </div>
+
+        <div class="test-section">
+            <h3>اختبار حفظ البيانات</h3>
+            <button onclick="testSaveData()">اختبار الحفظ</button>
+            <div id="saveResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>اختبار تحميل البيانات</h3>
+            <button onclick="testLoadData()">اختبار التحميل</button>
+            <div id="loadResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>اختبار البيانات المحفوظة</h3>
+            <button onclick="showStoredData()">عرض البيانات المحفوظة</button>
+            <div id="storedData"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>مسح البيانات</h3>
+            <button onclick="clearData()">مسح جميع البيانات</button>
+            <div id="clearResult"></div>
+        </div>
+    </div>
+
+    <script>
+        // بيانات اختبار
+        const testData = {
+            packages: [
+                { id: 'pkg1', name: 'باقة اختبار 1', retailPrice: 100, wholesalePrice: 80, distributorPrice: 60 },
+                { id: 'pkg2', name: 'باقة اختبار 2', retailPrice: 200, wholesalePrice: 160, distributorPrice: 120 }
+            ],
+            inventory: [
+                { id: 'inv1', packageId: 'pkg1', quantity: 50 },
+                { id: 'inv2', packageId: 'pkg2', quantity: 30 }
+            ],
+            stores: [
+                { id: 'store1', name: 'محل اختبار 1', priceType: 'retail' },
+                { id: 'store2', name: 'محل اختبار 2', priceType: 'wholesale' }
+            ],
+            expenses: [
+                { id: 'exp1', type: 'مصروفات عامة', amount: 500, date: '2024-01-15', description: 'مصروفات اختبار' }
+            ],
+            sales: [
+                { id: 'sale1', storeId: 'store1', packageId: 'pkg1', quantity: 10, total: 1000, date: '2024-01-15' }
+            ],
+            payments: [
+                { id: 'pay1', storeId: 'store1', amount: 800, date: '2024-01-15' }
+            ],
+            trash: []
+        };
+
+        // دالة اختبار الحفظ
+        function testSaveData() {
+            try {
+                localStorage.setItem('networkCardsData', JSON.stringify(testData));
+                document.getElementById('saveResult').innerHTML = 
+                    '<div class="success">✅ تم حفظ البيانات بنجاح!</div>';
+            } catch (error) {
+                document.getElementById('saveResult').innerHTML = 
+                    '<div class="error">❌ خطأ في حفظ البيانات: ' + error.message + '</div>';
+            }
+        }
+
+        // دالة اختبار التحميل
+        function testLoadData() {
+            try {
+                const savedData = localStorage.getItem('networkCardsData');
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+                    document.getElementById('loadResult').innerHTML = 
+                        '<div class="success">✅ تم تحميل البيانات بنجاح!<br>' +
+                        'عدد الباقات: ' + parsedData.packages.length + '<br>' +
+                        'عدد المحلات: ' + parsedData.stores.length + '<br>' +
+                        'عدد المبيعات: ' + parsedData.sales.length + '</div>';
+                } else {
+                    document.getElementById('loadResult').innerHTML = 
+                        '<div class="info">ℹ️ لا توجد بيانات محفوظة</div>';
+                }
+            } catch (error) {
+                document.getElementById('loadResult').innerHTML = 
+                    '<div class="error">❌ خطأ في تحميل البيانات: ' + error.message + '</div>';
+            }
+        }
+
+        // دالة عرض البيانات المحفوظة
+        function showStoredData() {
+            try {
+                const savedData = localStorage.getItem('networkCardsData');
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+                    document.getElementById('storedData').innerHTML = 
+                        '<div class="success">✅ البيانات المحفوظة:<br>' +
+                        '<pre>' + JSON.stringify(parsedData, null, 2) + '</pre></div>';
+                } else {
+                    document.getElementById('storedData').innerHTML = 
+                        '<div class="info">ℹ️ لا توجد بيانات محفوظة</div>';
+                }
+            } catch (error) {
+                document.getElementById('storedData').innerHTML = 
+                    '<div class="error">❌ خطأ في عرض البيانات: ' + error.message + '</div>';
+            }
+        }
+
+        // دالة مسح البيانات
+        function clearData() {
+            try {
+                localStorage.removeItem('networkCardsData');
+                document.getElementById('clearResult').innerHTML = 
+                    '<div class="success">✅ تم مسح البيانات بنجاح!</div>';
+            } catch (error) {
+                document.getElementById('clearResult').innerHTML = 
+                    '<div class="error">❌ خطأ في مسح البيانات: ' + error.message + '</div>';
+            }
+        }
+
+        // اختبار تلقائي عند التحميل
+        window.onload = function() {
+            console.log('بدء اختبار البيانات...');
+            testLoadData();
+        };
+    </script>
+</body>
+</html>

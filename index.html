@@ -1553,58 +1553,15 @@
             }
         }
         
-        // استرجاع البيانات من localStorage إن وجدت - محسّن
+        // استرجاع البيانات من localStorage إن وجدت
         function loadData() {
             try {
-                // محاولة تحميل البيانات المشفرة أولاً
-                let parsedData = null;
-                
-                if (window.DataEncryption && window.DataEncryption.loadEncrypted) {
+                const savedData = localStorage.getItem('networkCardsData');
+                if (savedData) {
                     try {
-                        // محاولة تحميل البيانات المشفرة
-                        parsedData = window.DataEncryption.loadEncrypted('networkCardsData');
-                        
-                        // التحقق من سلامة البيانات المشفرة
-                        if (parsedData && !window.DataEncryption.verifyEncryptedData('networkCardsData')) {
-                            console.warn('البيانات المشفرة غير آمنة، سيتم استخدام البيانات العادية');
-                            parsedData = null;
-                        }
-                    } catch (encryptionError) {
-                        console.warn('فشل في تحميل البيانات المشفرة:', encryptionError);
-                    }
-                }
-                
-                // إذا فشل التحميل المشفر، حاول التحميل العادي
-                if (!parsedData) {
-                    try {
-                        const savedData = localStorage.getItem('networkCardsData');
-                        if (savedData) {
-                            // التحقق من وجود توقيع (بيانات مشفرة)
-                            const testParse = JSON.parse(savedData);
-                            if (testParse.signature && testParse.data) {
-                                // بيانات مشفرة لكن فشل فك التشفير
-                                console.warn('البيانات مشفرة لكن فشل فك التشفير');
-                                parsedData = testParse.data; // استخدم البيانات المشفرة كما هي
-                            } else {
-                                // بيانات غير مشفرة
-                                parsedData = testParse;
-                            }
-                        }
-                    } catch (parseError) {
-                        console.error('خطأ في تحليل البيانات المحفوظة:', parseError);
-                        // حذف البيانات التالفة
-                        localStorage.removeItem('networkCardsData');
-                    }
-                }
-                
-                if (parsedData) {
-                    // التحقق من صحة البيانات باستخدام دالة التحقق المحسّنة
-                    if (window.validateData && window.validateData(parsedData)) {
-                        // تنظيف البيانات باستخدام دالة التنظيف المحسّنة
-                        if (window.sanitizeData) {
-                            data = window.sanitizeData(parsedData);
-                        } else {
-                            // fallback للتنظيف اليدوي
+                        const parsedData = JSON.parse(savedData);
+                        if (typeof parsedData === 'object' && parsedData !== null) {
+                            // تنظيف البيانات يدوياً
                             data = {
                                 packages: Array.isArray(parsedData.packages) ? parsedData.packages.filter(item => item && typeof item === 'object') : [],
                                 inventory: Array.isArray(parsedData.inventory) ? parsedData.inventory.filter(item => item && typeof item === 'object') : [],
@@ -1614,15 +1571,22 @@
                                 payments: Array.isArray(parsedData.payments) ? parsedData.payments.filter(item => item && typeof item === 'object') : [],
                                 trash: Array.isArray(parsedData.trash) ? parsedData.trash.filter(item => item && typeof item === 'object') : []
                             };
+                            showNotification('تم تحميل البيانات بنجاح', 'success');
+                        } else {
+                            throw new Error('تنسيق البيانات غير صحيح');
                         }
-                        showNotification('تم تحميل البيانات بنجاح', 'success');
-                    } else {
-                        throw new Error('تنسيق البيانات غير صحيح');
+                    } catch (parseError) {
+                        console.error('خطأ في تحليل البيانات المحفوظة:', parseError);
+                        // حذف البيانات التالفة
+                        localStorage.removeItem('networkCardsData');
+                        showNotification('حدث خطأ في تحميل البيانات، سيتم استخدام بيانات جديدة', 'error');
                     }
                 } else {
                     // إذا لم توجد بيانات محفوظة، استخدم البيانات الافتراضية
                     showNotification('لا توجد بيانات محفوظة، سيتم استخدام بيانات جديدة', 'info');
                 }
+                
+
             } catch (error) {
                 console.error('خطأ في تحميل البيانات:', error);
                 showNotification('حدث خطأ في تحميل البيانات، سيتم استخدام بيانات جديدة', 'error');
@@ -1638,57 +1602,18 @@
                 };
             }
             
-            // تحديث جميع الواجهات مع معالجة الأخطاء
-            try {
-                updateDashboard();
-            } catch (error) {
-                console.error('خطأ في تحديث لوحة التحكم:', error);
-            }
-            
-            try {
-                renderPackagesTable();
-            } catch (error) {
-                console.error('خطأ في عرض جدول الباقات:', error);
-            }
-            
-            try {
-                renderInventoryTable();
-            } catch (error) {
-                console.error('خطأ في عرض جدول المخزون:', error);
-            }
-            
-            try {
-                renderStoresList();
-            } catch (error) {
-                console.error('خطأ في عرض قائمة المحلات:', error);
-            }
-            
-            try {
-                renderExpensesTable();
-            } catch (error) {
-                console.error('خطأ في عرض جدول المصروفات:', error);
-            }
-            
-            try {
-                updateReportStores();
-            } catch (error) {
-                console.error('خطأ في تحديث تقارير المحلات:', error);
-            }
-            
-            try {
-                updateProfitReport();
-            } catch (error) {
-                console.error('خطأ في تحديث تقرير الأرباح:', error);
-            }
-            
-            try {
-                generateDebtReport();
-            } catch (error) {
-                console.error('خطأ في توليد تقرير الديون:', error);
-            }
+            // تحديث جميع الواجهات
+            updateDashboard();
+            renderPackagesTable();
+            renderInventoryTable();
+            renderStoresList();
+            renderExpensesTable();
+            updateReportStores();
+            updateProfitReport();
+            generateDebtReport();
         }
         
-        // حفظ البيانات إلى localStorage - محسّن
+        // حفظ البيانات إلى localStorage
         function saveData() {
             try {
                 // التحقق من صحة البيانات قبل الحفظ
@@ -1696,95 +1621,37 @@
                     throw new Error('البيانات غير صحيحة');
                 }
                 
-                // تنظيف البيانات باستخدام دالة التنظيف المحسّنة
-                let validData;
-                if (window.sanitizeData) {
-                    validData = window.sanitizeData(data);
-                } else {
-                    // fallback للتنظيف اليدوي
-                    validData = {
-                        packages: Array.isArray(data.packages) ? data.packages.filter(item => item && typeof item === 'object') : [],
-                        inventory: Array.isArray(data.inventory) ? data.inventory.filter(item => item && typeof item === 'object') : [],
-                        stores: Array.isArray(data.stores) ? data.stores.filter(item => item && typeof item === 'object') : [],
-                        expenses: Array.isArray(data.expenses) ? data.expenses.filter(item => item && typeof item === 'object') : [],
-                        sales: Array.isArray(data.sales) ? data.sales.filter(item => item && typeof item === 'object') : [],
-                        payments: Array.isArray(data.payments) ? data.payments.filter(item => item && typeof item === 'object') : [],
-                        trash: Array.isArray(data.trash) ? data.trash.filter(item => item && typeof item === 'object') : []
-                    };
-                }
-                
-                // التحقق النهائي من صحة البيانات
-                if (window.validateData && !window.validateData(validData)) {
-                    throw new Error('البيانات غير صحيحة بعد التنظيف');
-                }
+                // تنظيف البيانات يدوياً
+                const validData = {
+                    packages: Array.isArray(data.packages) ? data.packages.filter(item => item && typeof item === 'object') : [],
+                    inventory: Array.isArray(data.inventory) ? data.inventory.filter(item => item && typeof item === 'object') : [],
+                    stores: Array.isArray(data.stores) ? data.stores.filter(item => item && typeof item === 'object') : [],
+                    expenses: Array.isArray(data.expenses) ? data.expenses.filter(item => item && typeof item === 'object') : [],
+                    sales: Array.isArray(data.sales) ? data.sales.filter(item => item && typeof item === 'object') : [],
+                    payments: Array.isArray(data.payments) ? data.payments.filter(item => item && typeof item === 'object') : [],
+                    trash: Array.isArray(data.trash) ? data.trash.filter(item => item && typeof item === 'object') : []
+                };
                 
                 // تحديث الكائن الأصلي بالبيانات الصحيحة
                 data = validData;
                 
-                // حفظ البيانات بالتشفير إذا كان متاحاً
-                let saved = false;
-                if (window.DataEncryption && window.DataEncryption.saveEncrypted) {
-                    try {
-                        saved = window.DataEncryption.saveEncrypted('networkCardsData', validData);
-                        
-                        // التحقق من نجاح الحفظ المشفر
-                        if (saved && !window.DataEncryption.verifyEncryptedData('networkCardsData')) {
-                            console.warn('فشل في التحقق من سلامة البيانات المشفرة');
-                            saved = false;
-                        }
-                    } catch (encryptionError) {
-                        console.error('خطأ في التشفير:', encryptionError);
-                        saved = false;
-                    }
-                }
+                // حفظ البيانات
+                localStorage.setItem('networkCardsData', JSON.stringify(validData));
+                showNotification('تم حفظ البيانات بنجاح', 'success');
                 
-                // إذا فشل التشفير، احفظ بالطريقة العادية
-                if (!saved) {
+                // المزامنة مع GitHub إذا كانت مفعلة
+                if (typeof githubSettings !== 'undefined' && githubSettings && githubSettings.autoSync && githubSettings.token && githubSettings.gistId) {
                     try {
-                        localStorage.setItem('networkCardsData', JSON.stringify(validData));
-                        saved = true;
-                    } catch (storageError) {
-                        console.error('خطأ في الحفظ العادي:', storageError);
-                        throw new Error('فشل في حفظ البيانات');
+                        githubUploadData().catch((syncError) => {
+                            console.warn('فشل في المزامنة مع GitHub:', syncError);
+                        });
+                    } catch (syncError) {
+                        console.warn('خطأ في المزامنة مع GitHub:', syncError);
                     }
-                }
-                
-                if (saved) {
-                    showNotification('تم حفظ البيانات بنجاح', 'success');
-                    
-                    // المزامنة مع GitHub إذا كانت مفعلة
-                    if (typeof githubSettings !== 'undefined' && githubSettings && githubSettings.autoSync && githubSettings.token && githubSettings.gistId) {
-                        try {
-                            githubUploadData().catch((syncError) => {
-                                console.warn('فشل في المزامنة مع GitHub:', syncError);
-                            });
-                        } catch (syncError) {
-                            console.warn('خطأ في المزامنة مع GitHub:', syncError);
-                        }
-                    }
-                } else {
-                    throw new Error('فشل في حفظ البيانات');
                 }
             } catch (error) {
                 console.error('خطأ في حفظ البيانات:', error);
                 showNotification('حدث خطأ في حفظ البيانات: ' + error.message, 'error');
-                
-                // محاولة حفظ نسخة احتياطية
-                try {
-                    const backupData = {
-                        packages: [],
-                        inventory: [],
-                        stores: [],
-                        expenses: [],
-                        sales: [],
-                        payments: [],
-                        trash: []
-                    };
-                    localStorage.setItem('networkCardsData_backup', JSON.stringify(backupData));
-                    console.log('تم حفظ نسخة احتياطية');
-                } catch (backupError) {
-                    console.error('فشل في حفظ النسخة الاحتياطية:', backupError);
-                }
             }
         }
         
@@ -1823,231 +1690,108 @@
             });
         }
         
-        // تحديث لوحة التحكم - محسّن
+        // تحديث لوحة التحكم
         function updateDashboard() {
-            try {
-                // التحقق من وجود البيانات
-                if (!data || typeof data !== 'object') {
-                    console.warn('البيانات غير متوفرة في updateDashboard');
-                    return;
-                }
-                
-                // تحديث الإحصائيات الثابتة مع معالجة الأخطاء
-                try {
-                    const packagesCountEl = document.getElementById('packagesCount');
-                    if (packagesCountEl) {
-                        packagesCountEl.textContent = (data.packages || []).length;
-                    }
-                } catch (error) {
-                    console.error('خطأ في تحديث عدد الباقات:', error);
-                }
-                
-                try {
-                    const storesCountEl = document.getElementById('storesCount');
-                    if (storesCountEl) {
-                        storesCountEl.textContent = (data.stores || []).length;
-                    }
-                } catch (error) {
-                    console.error('خطأ في تحديث عدد المحلات:', error);
-                }
-                
-                // إجمالي الكروت لا يعتمد على التاريخ
-                try {
-                    const totalCards = (data.inventory || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
-                    const totalCardsEl = document.getElementById('totalCards');
-                    if (totalCardsEl) {
-                        totalCardsEl.textContent = formatNumber(totalCards);
-                    }
-                } catch (error) {
-                    console.error('خطأ في تحديث إجمالي الكروت:', error);
-                }
-                
-                // تطبيق الفلاتر الزمنية على مبيعات/تسديدات/مصروفات
-                let filteredSales = [];
-                let filteredPayments = [];
-                let filteredExpenses = [];
-                
-                try {
-                    filteredSales = filterByDateRange(data.sales || [], s => s.date);
-                } catch (error) {
-                    console.error('خطأ في فلترة المبيعات:', error);
-                }
-                
-                try {
-                    filteredPayments = filterByDateRange(data.payments || [], p => p.date);
-                } catch (error) {
-                    console.error('خطأ في فلترة المدفوعات:', error);
-                }
-                
-                try {
-                    filteredExpenses = filterByDateRange(data.expenses || [], e => e.date);
-                } catch (error) {
-                    console.error('خطأ في فلترة المصروفات:', error);
-                }
-                
-                // إجمالي المبيعات
-                try {
-                    const totalSales = filteredSales.reduce((sum, sale) => sum + (sale.total || 0), 0);
-                    const totalSalesEl = document.getElementById('totalSales');
-                    if (totalSalesEl) {
-                        totalSalesEl.textContent = formatNumber(totalSales);
-                    }
-                } catch (error) {
-                    console.error('خطأ في تحديث إجمالي المبيعات:', error);
-                }
-                
-                // إجمالي التسديدات
-                try {
-                    const totalPaymentsSum = filteredPayments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-                    const totalPaymentsSumEl = document.getElementById('totalPaymentsSum');
-                    if (totalPaymentsSumEl) {
-                        totalPaymentsSumEl.textContent = formatNumber(totalPaymentsSum);
-                    }
-                } catch (error) {
-                    console.error('خطأ في تحديث إجمالي التسديدات:', error);
-                }
-                
-                // إجمالي الديون = مجموع (مبيعات كل محل - تسديداته) ضمن الفترة
-                try {
-                    const totalDebtsSum = (data.stores || []).reduce((sum, store) => {
-                        const storeSales = filteredSales.reduce((s, sale) => s + (sale.storeId === store.id ? (sale.total || 0) : 0), 0);
-                        const storePayments = filteredPayments.reduce((p, payment) => p + (payment.storeId === store.id ? (payment.amount || 0) : 0), 0);
-                        return sum + (storeSales - storePayments);
-                    }, 0);
-                    const totalDebtsSumEl = document.getElementById('totalDebtsSum');
-                    if (totalDebtsSumEl) {
-                        totalDebtsSumEl.textContent = formatNumber(totalDebtsSum);
-                    }
-                } catch (error) {
-                    console.error('خطأ في تحديث إجمالي الديون:', error);
-                }
-                
-                // إجمالي المصروفات
-                try {
-                    const totalExpensesSum = filteredExpenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
-                    const totalExpensesSumEl = document.getElementById('totalExpensesSum');
-                    if (totalExpensesSumEl) {
-                        totalExpensesSumEl.textContent = formatNumber(totalExpensesSum);
-                    }
-                } catch (error) {
-                    console.error('خطأ في تحديث إجمالي المصروفات:', error);
-                }
-                
-                // صافي الأرباح = إجمالي التسديدات - إجمالي المصروفات ضمن الفترة
-                try {
-                    const totalPaymentsSum = filteredPayments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-                    const totalExpensesSum = filteredExpenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
-                    const netProfit = totalPaymentsSum - totalExpensesSum;
-                    const netProfitEl = document.getElementById('netProfit');
-                    if (netProfitEl) {
-                        netProfitEl.textContent = formatNumber(netProfit);
-                        netProfitEl.className = netProfit >= 0 ? 'stat-value currency profit-positive' : 'stat-value currency profit-negative';
-                    }
-                } catch (error) {
-                    console.error('خطأ في تحديث صافي الأرباح:', error);
-                }
-                
-                // تحديث أحدث الباقات (غير مستخدم إذا لم توجد العناصر)
-                try {
-                    const recentPackages = document.getElementById('recentPackages');
-                    if (recentPackages) {
-                        // استخدام DocumentFragment لتحسين الأداء
-                        if (window.$dom && window.$dom.schedule) {
-                            window.$dom.schedule(() => {
-                                try {
-                                    const fragment = document.createDocumentFragment();
-                                    const packagesToShow = (data.packages || []).slice(-3).reverse();
-                                    packagesToShow.forEach(pkg => {
-                                        try {
-                                            const row = window.$safe && window.$safe.row ? 
-                                                window.$safe.row([
-                                                    pkg.name || '',
-                                                    {text: pkg.retailPrice ? formatNumber(pkg.retailPrice) : '-', className: 'currency'},
-                                                    {text: pkg.wholesalePrice ? formatNumber(pkg.wholesalePrice) : '-', className: 'currency'},
-                                                    {text: pkg.distributorPrice ? formatNumber(pkg.distributorPrice) : '-', className: 'currency'},
-                                                    formatNumber((data.inventory || []).filter(i => i.packageId === pkg.id).reduce((sum, i) => sum + (i.quantity || 0), 0))
-                                                ]) : null;
-                                            if (row) fragment.appendChild(row);
-                                        } catch (error) {
-                                            console.error('خطأ في إنشاء صف الباقة:', error);
-                                        }
-                                    });
-                                    recentPackages.innerHTML = '';
-                                    recentPackages.appendChild(fragment);
-                                } catch (error) {
-                                    console.error('خطأ في تحديث أحدث الباقات:', error);
-                                }
-                            });
-                        } else {
-                            // الطريقة التقليدية مع تحسينات
-                            try {
-                                const fragment = document.createDocumentFragment();
-                                const packagesToShow = (data.packages || []).slice(-3).reverse();
-                                packagesToShow.forEach(pkg => {
-                                    try {
-                                        const row = document.createElement('tr');
-                                        const cells = [
-                                            pkg.name || '',
-                                            pkg.retailPrice ? formatNumber(pkg.retailPrice) : '-',
-                                            pkg.wholesalePrice ? formatNumber(pkg.wholesalePrice) : '-',
-                                            pkg.distributorPrice ? formatNumber(pkg.distributorPrice) : '-',
-                                            formatNumber((data.inventory || []).filter(i => i.packageId === pkg.id).reduce((sum, i) => sum + (i.quantity || 0), 0))
-                                        ];
-                                        cells.forEach((content, index) => {
-                                            const td = document.createElement('td');
-                                            td.textContent = content;
-                                            if (index >= 1 && index <= 3) td.className = 'currency';
-                                            row.appendChild(td);
-                                        });
-                                        fragment.appendChild(row);
-                                    } catch (error) {
-                                        console.error('خطأ في إنشاء صف الباقة التقليدي:', error);
-                                    }
-                                });
-                                recentPackages.innerHTML = '';
-                                recentPackages.appendChild(fragment);
-                            } catch (error) {
-                                console.error('خطأ في تحديث أحدث الباقات التقليدي:', error);
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.error('خطأ في تحديث أحدث الباقات:', error);
-                }
-                
-                // تحديث أحدث المحلات (غير مستخدم إذا لم توجد العناصر)
-                try {
-                    const recentStores = document.getElementById('recentStores');
-                    if (recentStores) {
-                        recentStores.innerHTML = '';
-                        const storesToShow = (data.stores || []).slice(-3).reverse();
-                        storesToShow.forEach(store => {
-                            try {
-                                const card = document.createElement('div');
-                                card.className = 'store-card';
-                                
-                                // استخدام textContent بدلاً من innerHTML للأمان
-                                const nameDiv = document.createElement('div');
-                                nameDiv.className = 'store-name';
-                                nameDiv.textContent = store.name || '';
-                                
-                                const balanceDiv = document.createElement('div');
-                                balanceDiv.className = 'store-balance';
-                                balanceDiv.textContent = 'نوع السعر: ' + getPriceTypeName(store.priceType);
-                                
-                                card.appendChild(nameDiv);
-                                card.appendChild(balanceDiv);
-                                recentStores.appendChild(card);
-                            } catch (error) {
-                                console.error('خطأ في إنشاء بطاقة المحل:', error);
-                            }
+            // تحديث الإحصائيات الثابتة
+            document.getElementById('packagesCount').textContent = data.packages.length;
+            document.getElementById('storesCount').textContent = data.stores.length;
+            
+            // إجمالي الكروت لا يعتمد على التاريخ
+            const totalCards = data.inventory.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('totalCards').textContent = formatNumber(totalCards);
+            
+            // تطبيق الفلاتر الزمنية على مبيعات/تسديدات/مصروفات
+            const filteredSales = filterByDateRange(data.sales, s => s.date);
+            const filteredPayments = filterByDateRange(data.payments, p => p.date);
+            const filteredExpenses = filterByDateRange(data.expenses, e => e.date);
+            
+            // إجمالي المبيعات
+            const totalSales = filteredSales.reduce((sum, sale) => sum + (sale.total || 0), 0);
+            document.getElementById('totalSales').textContent = formatNumber(totalSales);
+            
+            // إجمالي التسديدات
+            const totalPaymentsSum = filteredPayments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
+            document.getElementById('totalPaymentsSum').textContent = formatNumber(totalPaymentsSum);
+            
+            // إجمالي الديون = مجموع (مبيعات كل محل - تسديداته) ضمن الفترة
+            const totalDebtsSum = data.stores.reduce((sum, store) => {
+                const storeSales = filteredSales.reduce((s, sale) => s + (sale.storeId === store.id ? (sale.total || 0) : 0), 0);
+                const storePayments = filteredPayments.reduce((p, payment) => p + (payment.storeId === store.id ? (payment.amount || 0) : 0), 0);
+                return sum + (storeSales - storePayments);
+            }, 0);
+            document.getElementById('totalDebtsSum').textContent = formatNumber(totalDebtsSum);
+            
+            // إجمالي المصروفات
+            const totalExpensesSum = filteredExpenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
+            const totalExpensesSumEl = document.getElementById('totalExpensesSum');
+            if (totalExpensesSumEl) totalExpensesSumEl.textContent = formatNumber(totalExpensesSum);
+            
+            // صافي الأرباح = إجمالي التسديدات - إجمالي المصروفات ضمن الفترة
+            const netProfit = totalPaymentsSum - totalExpensesSum;
+            document.getElementById('netProfit').textContent = formatNumber(netProfit);
+            
+            // تحديث أحدث الباقات (غير مستخدم إذا لم توجد العناصر)
+            const recentPackages = document.getElementById('recentPackages');
+            if (recentPackages) {
+                // استخدام DocumentFragment لتحسين الأداء
+                if (window.$dom && window.$dom.schedule) {
+                    window.$dom.schedule(() => {
+                        const fragment = document.createDocumentFragment();
+                        const packagesToShow = data.packages.slice(-3).reverse();
+                        packagesToShow.forEach(pkg => {
+                            const row = window.$safe && window.$safe.row ? 
+                                window.$safe.row([
+                                    pkg.name,
+                                    {text: pkg.retailPrice ? formatNumber(pkg.retailPrice) : '-', className: 'currency'},
+                                    {text: pkg.wholesalePrice ? formatNumber(pkg.wholesalePrice) : '-', className: 'currency'},
+                                    {text: pkg.distributorPrice ? formatNumber(pkg.distributorPrice) : '-', className: 'currency'},
+                                    formatNumber(data.inventory.filter(i => i.packageId === pkg.id).reduce((sum, i) => sum + i.quantity, 0))
+                                ]) : null;
+                            if (row) fragment.appendChild(row);
                         });
-                    }
-                } catch (error) {
-                    console.error('خطأ في تحديث أحدث المحلات:', error);
+                        recentPackages.innerHTML = '';
+                        recentPackages.appendChild(fragment);
+                    });
+                } else {
+                    // الطريقة التقليدية مع تحسينات
+                    const fragment = document.createDocumentFragment();
+                    const packagesToShow = data.packages.slice(-3).reverse();
+                    packagesToShow.forEach(pkg => {
+                        const row = document.createElement('tr');
+                        const cells = [
+                            pkg.name,
+                            pkg.retailPrice ? formatNumber(pkg.retailPrice) : '-',
+                            pkg.wholesalePrice ? formatNumber(pkg.wholesalePrice) : '-',
+                            pkg.distributorPrice ? formatNumber(pkg.distributorPrice) : '-',
+                            formatNumber(data.inventory.filter(i => i.packageId === pkg.id).reduce((sum, i) => sum + i.quantity, 0))
+                        ];
+                        cells.forEach((content, index) => {
+                            const td = document.createElement('td');
+                            td.textContent = content;
+                            if (index >= 1 && index <= 3) td.className = 'currency';
+                            row.appendChild(td);
+                        });
+                        fragment.appendChild(row);
+                    });
+                    recentPackages.innerHTML = '';
+                    recentPackages.appendChild(fragment);
                 }
-            } catch (error) {
-                console.error('خطأ عام في تحديث لوحة التحكم:', error);
+            }
+            
+            // تحديث أحدث المحلات (غير مستخدم إذا لم توجد العناصر)
+            const recentStores = document.getElementById('recentStores');
+            if (recentStores) {
+                recentStores.innerHTML = '';
+                const storesToShow = data.stores.slice(-3).reverse();
+                storesToShow.forEach(store => {
+                    const card = document.createElement('div');
+                    card.className = 'store-card';
+                    card.innerHTML = `
+                        <div class="store-name">${store.name}</div>
+                        <div class="store-balance">نوع السعر: ${getPriceTypeName(store.priceType)}</div>
+                    `;
+                    recentStores.appendChild(card);
+                });
             }
         }
         
