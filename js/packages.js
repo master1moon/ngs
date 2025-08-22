@@ -146,7 +146,7 @@ function savePackage() {
   const retailPrice = parseFormattedNumber(document.getElementById('retailPrice').value) || null;
   const wholesalePrice = parseFormattedNumber(document.getElementById('wholesalePrice').value) || null;
   const distributorPrice = parseFormattedNumber(document.getElementById('distributorPrice').value) || null;
-  const date = (typeof formatDateEn==='function') ? formatDateEn(document.getElementById('packageDate').value || today) : (document.getElementById('packageDate').value || today);
+  const date = (typeof getDateInputValue==='function') ? getDateInputValue('packageDate', today) : ((typeof formatDateEn==='function') ? formatDateEn(document.getElementById('packageDate').value || today) : (document.getElementById('packageDate').value || today));
   if (!name) { showNotification('يرجى إدخال اسم الباقة', 'error'); return; }
   if (id) {
     const pkg = data.packages.find(p => p.id === id);
