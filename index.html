@@ -1414,6 +1414,18 @@
         // تهيئة التواريخ باللغة العربية
         moment.locale('ar');
         const today = moment().format('YYYY-MM-DD');
+        if (!window.formatDateEn) {
+            window.formatDateEn = function(dateStr) {
+                if (!dateStr) return '';
+                var raw = String(dateStr).slice(0, 10);
+                if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(raw)) {
+                    return raw.replace(/-(\d)(?!\d)/g, '-0$1').replace(/^(\d{4})-(\d{2})-(\d{2}).*/, '$1-$2-$3');
+                }
+                var n = raw.replace(/\D/g, '');
+                if (n.length >= 8) return n.slice(0,4)+'-'+n.slice(4,6)+'-'+n.slice(6,8);
+                return raw;
+            };
+        }
         document.getElementById('currentDate').textContent = toEnglishDigits(moment().format('YYYY-MM-DD'));
         document.getElementById('currentMonth').textContent = toEnglishDigits(moment().format('MMMM'));
         
