@@ -593,7 +593,8 @@ function generatePartnerReportData() {
 }
 
 function getPeriodRange() {
-  const f = document.getElementById('reportFromDate'); const t = document.getElementById('reportToDate');
+  const f = document.getElementById('reportsFromDate');
+  const t = document.getElementById('reportsToDate');
   const fromDate = formatDateEn((f && f.value) || moment().startOf('month').format('YYYY-MM-DD'));
   const toDate = formatDateEn((t && t.value) || moment().format('YYYY-MM-DD'));
   return { fromDate, toDate };
