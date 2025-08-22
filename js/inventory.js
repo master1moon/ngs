@@ -142,7 +142,7 @@ function editInventory(id) {
   document.getElementById('inventoryModalTitle').textContent = 'تعديل الكمية';
   document.getElementById('inventoryId').value = item.id;
   document.getElementById('inventoryQuantity').value = formatNumber(item.quantity);
-  document.getElementById('inventoryDate').value = item.createdAt || today;
+  document.getElementById('inventoryDate').value = formatDateEn(item.createdAt);
   const modal = new bootstrap.Modal(document.getElementById('inventoryModal')); modal.show();
 }
 
@@ -159,7 +159,7 @@ function saveInventory() {
   const id = document.getElementById('inventoryId').value;
   const packageId = document.getElementById('inventoryPackage').value;
   const quantity = parseFormattedNumber(document.getElementById('inventoryQuantity').value);
-  const date = document.getElementById('inventoryDate').value || today;
+  const date = formatDateEn(document.getElementById('inventoryDate').value);
   if (!packageId || isNaN(quantity) || quantity <= 0) { showNotification('يرجى ملء جميع الحقول المطلوبة', 'error'); return; }
   if (id) {
     const item = data.inventory.find(i => i.id === id);

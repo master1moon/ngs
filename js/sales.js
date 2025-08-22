@@ -32,7 +32,7 @@ function saveSale() {
   const reason = document.getElementById('saleReason').value;
   const quantity = parseFormattedNumber(document.getElementById('saleQuantity').value) || 0;
   const amount = parseFormattedNumber(document.getElementById('saleAmount').value) || 0;
-  const date = document.getElementById('saleDate').value || today;
+  const date = formatDateEn(document.getElementById('saleDate').value);
   if (!storeId || (!packageId && !reason)) { showNotification('يرجى ملء جميع الحقول المطلوبة', 'error'); return; }
   const isCustom = packageId === 'custom';
   const store = data.stores.find(s => s.id === storeId);
@@ -97,7 +97,7 @@ function editSale(id) {
   document.getElementById('saleReason').value = sale.reason || '';
   document.getElementById('saleQuantity').value = formatNumber(sale.quantity) || '';
   document.getElementById('saleAmount').value = formatNumber(sale.amount) || '';
-  document.getElementById('saleDate').value = sale.date;
+  document.getElementById('saleDate').value = formatDateEn(sale.date);
   document.getElementById('customReasonGroup').style.display = isCustom ? 'block' : 'none';
   document.getElementById('quantityGroup').style.display = isCustom ? 'none' : 'block';
   document.getElementById('amountGroup').style.display = isCustom ? 'block' : 'none';

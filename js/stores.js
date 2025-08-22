@@ -121,7 +121,7 @@ function saveStore() {
   const id = document.getElementById('storeId').value;
   const name = document.getElementById('storeName').value;
   const priceType = document.getElementById('storePriceType').value;
-  const date = document.getElementById('storeDate').value || today;
+  const date = formatDateEn(document.getElementById('storeDate').value);
   if (!name) { showNotification('يرجى إدخال اسم المحل', 'error'); return; }
   if (id) {
     const store = data.stores.find(s => s.id === id);
