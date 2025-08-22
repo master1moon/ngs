@@ -115,7 +115,7 @@ function addPackage() {
   document.getElementById('retailPrice').value = '';
   document.getElementById('wholesalePrice').value = '';
   document.getElementById('distributorPrice').value = '';
-  document.getElementById('packageDate').value = today;
+  document.getElementById('packageDate').value = '';
   const modal = new bootstrap.Modal(document.getElementById('packageModal')); modal.show();
 }
 

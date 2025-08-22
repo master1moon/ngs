@@ -5,7 +5,7 @@ function addPayment(storeId) {
   document.getElementById('paymentStoreId').value = storeId;
   document.getElementById('paymentAmount').value = '';
   document.getElementById('paymentNotes').value = '';
-  document.getElementById('paymentDate').value = today;
+  document.getElementById('paymentDate').value = '';
   const modal = new bootstrap.Modal(document.getElementById('paymentModal')); modal.show();
 }
 

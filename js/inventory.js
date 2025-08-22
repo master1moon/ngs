@@ -130,7 +130,7 @@ function addInventory() {
   document.getElementById('inventoryModalTitle').textContent = 'إضافة كمية جديدة';
   document.getElementById('inventoryId').value = '';
   document.getElementById('inventoryQuantity').value = '';
-  document.getElementById('inventoryDate').value = today;
+  document.getElementById('inventoryDate').value = '';
   const modal = new bootstrap.Modal(document.getElementById('inventoryModal')); modal.show();
 }
 

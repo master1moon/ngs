@@ -19,7 +19,7 @@ function addSale(storeId) {
   document.getElementById('saleReason').value = '';
   document.getElementById('saleQuantity').value = '';
   document.getElementById('saleAmount').value = '';
-  document.getElementById('saleDate').value = today;
+  document.getElementById('saleDate').value = '';
   document.getElementById('customReasonGroup').style.display = 'none';
   document.getElementById('amountGroup').style.display = 'none';
   const modal = new bootstrap.Modal(document.getElementById('saleModal')); modal.show();

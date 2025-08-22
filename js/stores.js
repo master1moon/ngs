@@ -94,7 +94,7 @@ function addStore() {
   document.getElementById('storeId').value = '';
   document.getElementById('storeName').value = '';
   document.getElementById('storePriceType').value = 'retail';
-  document.getElementById('storeDate').value = today;
+  document.getElementById('storeDate').value = '';
   const modal = new bootstrap.Modal(document.getElementById('storeModal')); modal.show();
 }
 
@@ -104,7 +104,7 @@ function editStore(id) {
   document.getElementById('storeId').value = store.id;
   document.getElementById('storeName').value = store.name;
   document.getElementById('storePriceType').value = store.priceType;
-  document.getElementById('storeDate').value = store.createdAt || today;
+  document.getElementById('storeDate').value = formatDateEn(store.createdAt);
   const modal = new bootstrap.Modal(document.getElementById('storeModal')); modal.show();
 }
 
