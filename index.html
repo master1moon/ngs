@@ -2994,7 +2994,8 @@
         
         // تحديث قائمة المحلات في التقارير
         function updateReportStores() {
-            const select = document.getElementById('reportStoreSelect');
+            const select = document.getElementById('reportsStoreFilter');
+            if (!select) return;
             // مسح الخيارات الحالية باستثناء "جميع المحلات"
             while (select.options.length > 1) {
                 select.remove(1);
@@ -3802,6 +3803,14 @@
                     const targetSection = this.getAttribute('data-section');
                     switchSection(targetSection, this.textContent.trim());
                 });
+            });
+            // تفويض عام للنقرات لضمان عمل الروابط حتى لو فشل ربط فردي
+            document.body.addEventListener('click', function(ev){
+                const anchor = ev.target.closest && ev.target.closest('.sidebar .nav-link, #mobileDrawer .nav-link');
+                if (!anchor) return;
+                ev.preventDefault();
+                const targetSection = anchor.getAttribute('data-section');
+                switchSection(targetSection, anchor.textContent.trim());
             });
             
             // إضافة معالجات الأحداث للأزرار

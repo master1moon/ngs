@@ -153,9 +153,9 @@ function switchSection(targetSection, labelText) {
   const sectionEl = document.getElementById(targetSection);
   if (sectionEl) { sectionEl.style.display = 'block'; setTimeout(() => sectionEl.classList.add('show'), 10); }
   const title = labelText || (document.querySelector(`.sidebar .nav-link[data-section="${targetSection}"]`)?.textContent.trim() || '');
-  if (title) document.querySelector('.page-title').textContent = title;
-  if (targetSection === 'reports') if (typeof generatePartnerReports === 'function') generatePartnerReports();
-  if (targetSection === 'trash') if (typeof renderTrashTable === 'function') setTimeout(() => renderTrashTable(), 100);
+  const titleEl = document.querySelector('.page-title'); if (title && titleEl) titleEl.textContent = title;
+  if (targetSection === 'reports') { try{ generateDebtReport(); updateProfitReport(); generatePartnerReports(); }catch(_){} }
+  if (targetSection === 'trash') { try{ setTimeout(() => renderTrashTable(), 50); }catch(_){} }
 }
 
 // ضمان إظهار القسم الافتراضي حتى لو فشل تهيئة أخرى
