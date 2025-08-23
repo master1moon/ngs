@@ -15,6 +15,7 @@
     <h1 class="mb-3">إدارة الكروت - إصدار 2</h1>
 
     <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-dashboard" type="button" role="tab">لوحة التحكم</button></li>
       <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-packages" type="button" role="tab">الباقات</button></li>
       <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-inventory" type="button" role="tab">المخزون</button></li>
       <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-sales" type="button" role="tab">المبيعات</button></li>
@@ -28,6 +29,9 @@
     </ul>
 
     <div class="tab-content pt-3">
+      <div class="tab-pane fade" id="tab-dashboard" role="tabpanel">
+        <div id="dashboardView"></div>
+      </div>
       <div class="tab-pane fade show active" id="tab-packages" role="tabpanel">
         <div id="packagesView"></div>
       </div>
@@ -78,6 +82,7 @@
   <script src="./js/views/statements.js"></script>
   <script src="./js/views/partners.js"></script>
   <script src="./js/views/settings.js"></script>
+  <script src="./js/views/dashboard.js"></script>
   <script src="./js/app.js"></script>
 </body>
 </html>
