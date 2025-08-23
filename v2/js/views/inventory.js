@@ -44,6 +44,7 @@
     $storage.save();
     document.getElementById('invQty').value=''; if ($dates && $dates.InventoryDate) $dates.InventoryDate.set('');
     renderRows();
+    document.dispatchEvent(new CustomEvent('state:changed'));
   }
 
   document.addEventListener('DOMContentLoaded', render);

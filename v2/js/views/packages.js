@@ -43,6 +43,7 @@
     window.$storage.save();
     document.getElementById('pkgName').value=''; document.getElementById('pkgRetail').value=''; if ($dates && $dates.PackageDate) $dates.PackageDate.set('');
     renderRows();
+    document.dispatchEvent(new CustomEvent('state:changed'));
   }
 
   document.addEventListener('DOMContentLoaded', render);

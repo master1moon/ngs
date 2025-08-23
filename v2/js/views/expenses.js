@@ -43,6 +43,7 @@
     $storage.save();
     document.getElementById('expenseType').value=''; document.getElementById('expenseAmount').value=''; if ($dates && $dates.ExpenseDate) $dates.ExpenseDate.set('');
     renderRows();
+    document.dispatchEvent(new CustomEvent('state:changed'));
   }
 
   document.addEventListener('DOMContentLoaded', render);
