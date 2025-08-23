@@ -18,6 +18,7 @@
       + '</div>'
       + '<div class="form-text mt-2" id="saleHint"></div>'
       + '</div></div>'
+      + '<div class="row mt-3"><div class="col-md-4"><input id="saleSearch" class="form-control" placeholder="بحث في المبيعات"></div></div>'
       + '<div class="table-responsive mt-3">\n'
       + '  <table class="table table-sm align-middle"><thead><tr><th>المحل</th><th>الباقة</th><th>الكمية</th><th>الإجمالي</th><th>التاريخ</th><th>إجراءات</th></tr></thead><tbody id="salesTable"></tbody></table>'}
       + '</div>';
@@ -27,6 +28,7 @@
     document.getElementById('saleStore').addEventListener('change', updateHint);
     document.getElementById('saleQty').addEventListener('input', updateHint);
     document.getElementById('addSaleBtn').addEventListener('click', onAdd);
+    document.getElementById('saleSearch').addEventListener('input', renderRows);
     renderRows();
   }
 
@@ -57,7 +59,10 @@
 
   function renderRows(){
     const tb = document.getElementById('salesTable'); if (!tb) return; tb.innerHTML='';
-    for (const s of $state.sales){
+    const q = (document.getElementById('saleSearch')?.value||'').toLowerCase();
+    let arr = $state.sales||[];
+    if (q) arr = arr.filter(s=> [s.storeId, s.packageId, String(s.quantity||''), String(s.total||''), s.date||''].join(' ').toLowerCase().includes(q));
+    for (const s of arr){
       const pkg = ($state.packages||[]).find(p=> String(p.id)===String(s.packageId));
       const store = ($state.stores||[]).find(st=> String(st.id)===String(s.storeId));
       const tr = document.createElement('tr');

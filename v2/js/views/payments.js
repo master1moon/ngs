@@ -14,6 +14,7 @@
       + '  <div class="col-md-3"><input id="paymentDate" type="date" class="form-control" placeholder="YYYY-MM-DD"></div>'
       + '  <div class="col-md-3"><button id="addPaymentBtn" class="btn btn-primary w-100">إضافة</button></div>'
       + '</div>'
+      + '<div class="row mt-3"><div class="col-md-4"><input id="paymentSearch" class="form-control" placeholder="بحث في التسديدات"></div></div>'
       + '</div></div>'
       + '<div class="table-responsive mt-3">\n'
       + '  <table class="table table-sm align-middle"><thead><tr><th>المحل</th><th>المبلغ</th><th>التاريخ</th><th>إجراءات</th></tr></thead><tbody id="paymentsTable"></tbody></table>'
@@ -21,12 +22,16 @@
 
     if ($dates && $dates.PaymentDate) $dates.PaymentDate.set('');
     document.getElementById('addPaymentBtn').addEventListener('click', onAdd);
+    document.getElementById('paymentSearch').addEventListener('input', renderRows);
     renderRows();
   }
 
   function renderRows(){
+    const q = (document.getElementById('paymentSearch')?.value||'').toLowerCase();
     const tb = document.getElementById('paymentsTable'); if (!tb) return; tb.innerHTML='';
-    for (const p of $state.payments){
+    let arr = $state.payments||[];
+    if (q) arr = arr.filter(p=> [p.storeId, String(p.amount||''), p.date||''].join(' ').toLowerCase().includes(q));
+    for (const p of arr){
       const st = ($state.stores||[]).find(s=> String(s.id)===String(p.storeId));
       const tr = document.createElement('tr');
       tr.innerHTML = '<td>'+ (st?st.name:(p.storeId||'')) +'</td>'

@@ -13,6 +13,7 @@
       + '  <div class="col-md-3"><input id="expenseDate" type="date" class="form-control" placeholder="YYYY-MM-DD"></div>'
       + '  <div class="col-md-3"><button id="addExpenseBtn" class="btn btn-primary w-100">إضافة</button></div>'
       + '</div>'
+      + '<div class="row mt-3"><div class="col-md-4"><input id="expenseSearch" class="form-control" placeholder="بحث في المصروفات"></div></div>'
       + '</div></div>'
       + '<div class="table-responsive mt-3">\n'
       + '  <table class="table table-sm align-middle"><thead><tr><th>النوع</th><th>المبلغ</th><th>التاريخ</th><th>إجراءات</th></tr></thead><tbody id="expensesTable"></tbody></table>'}
@@ -20,12 +21,16 @@
 
     if ($dates && $dates.ExpenseDate) $dates.ExpenseDate.set('');
     document.getElementById('addExpenseBtn').addEventListener('click', onAdd);
+    document.getElementById('expenseSearch').addEventListener('input', renderRows);
     renderRows();
   }
 
   function renderRows(){
     const tb = document.getElementById('expensesTable'); if (!tb) return; tb.innerHTML='';
-    for (const e of $state.expenses){
+    const q = (document.getElementById('expenseSearch')?.value||'').toLowerCase();
+    let arr = $state.expenses||[];
+    if (q) arr = arr.filter(e=> [e.type||'', String(e.amount||''), e.date||''].join(' ').toLowerCase().includes(q));
+    for (const e of arr){
       const tr = document.createElement('tr');
       tr.innerHTML = '<td>'+ (e.type||'') +'</td>'
                    + '<td class="currency">'+ Number(e.amount||0).toLocaleString('en-US') +'</td>'

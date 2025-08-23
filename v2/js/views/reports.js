@@ -11,7 +11,7 @@
       + '  <div class="col-md-3"><label class="form-label">من</label><input type="date" id="repFrom" class="form-control" placeholder="YYYY-MM-DD"></div>'
       + '  <div class="col-md-3"><label class="form-label">إلى</label><input type="date" id="repTo" class="form-control" placeholder="YYYY-MM-DD"></div>'
       + '  <div class="col-md-3"><button id="applyRange" class="btn btn-primary w-100">تطبيق</button></div>'
-      + '  <div class="col-md-3 d-flex gap-2"><button id="exportJson" class="btn btn-outline-secondary w-100">تصدير JSON</button><button id="exportTxt" class="btn btn-outline-secondary w-100">تصدير TXT</button><button id="printReport" class="btn btn-outline-dark w-100">طباعة</button></div>'
+      + '  <div class="col-md-3 d-flex gap-2"><button id="exportJson" class="btn btn-outline-secondary w-100">تصدير JSON</button><button id="exportTxt" class="btn btn-outline-secondary w-100">تصدير TXT</button><button id="exportXlsx" class="btn btn-outline-success w-100">تصدير Excel</button><button id="printReport" class="btn btn-outline-dark w-100">طباعة</button></div>'
       + '</div>'
       + '<div class="mt-3" id="repSummary"></div>'
       + '</div></div>'
@@ -26,6 +26,7 @@
     document.getElementById('applyRange').addEventListener('click', update);
     document.getElementById('exportJson').addEventListener('click', ()=> exportData('json'));
     document.getElementById('exportTxt').addEventListener('click', ()=> exportData('txt'));
+    document.getElementById('exportXlsx').addEventListener('click', ()=> exportExcel());
     document.getElementById('printReport').addEventListener('click', ()=> printReport());
 
     update();
@@ -105,6 +106,18 @@
       const blob = new Blob([txt], {type:'text/plain'});
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'reports.txt'; a.click();
     }
+  }
+
+  function exportExcel(){
+    const r = getRange();
+    const sales = ($state.sales||[]).filter(s=> inRange(s.date, r)).map(s=> ({ store: findStore(s.storeId)||s.storeId, package: findPkg(s.packageId)||s.packageId, quantity: s.quantity||0, total: Number(s.total||0), date: s.date||'' }));
+    const payments = ($state.payments||[]).filter(p=> inRange(p.date, r)).map(p=> ({ store: findStore(p.storeId)||p.storeId, amount: Number(p.amount||0), date: p.date||'' }));
+    const expenses = ($state.expenses||[]).filter(e=> inRange(e.date, r)).map(e=> ({ type: e.type||'', amount: Number(e.amount||0), date: e.date||'' }));
+    const wb = XLSX.utils.book_new();
+    const ws1 = XLSX.utils.json_to_sheet(sales); XLSX.utils.book_append_sheet(wb, ws1, 'Sales');
+    const ws2 = XLSX.utils.json_to_sheet(payments); XLSX.utils.book_append_sheet(wb, ws2, 'Payments');
+    const ws3 = XLSX.utils.json_to_sheet(expenses); XLSX.utils.book_append_sheet(wb, ws3, 'Expenses');
+    XLSX.writeFile(wb, `reports_${(r.from||'')}_${(r.to||'')}.xlsx`);
   }
 
   function printReport(){
