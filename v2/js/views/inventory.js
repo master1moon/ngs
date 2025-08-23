@@ -57,10 +57,22 @@
     for (const i of ($state.inventory||[])){
       const pkg = ($state.packages||[]).find(p=> String(p.id)===String(i.packageId));
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${pkg?pkg.name:i.packageId}</td><td>${Number(i.quantity||0).toLocaleString('en-US')}</td><td>${i.createdAt||''}</td><td><button class="btn btn-sm btn-outline-danger" data-id="${i.id}">حذف</button></td>`;
-      tr.querySelector('button').addEventListener('click', ()=> onDeleteRaw(i.id));
+      tr.innerHTML = `<td class="cell-pkg">${pkg?pkg.name:i.packageId}</td><td class="cell-qty">${Number(i.quantity||0).toLocaleString('en-US')}</td><td class="cell-date">${i.createdAt||''}</td><td><button class="btn btn-sm btn-outline-secondary me-1 edit">تعديل</button><button class="btn btn-sm btn-outline-danger" data-id="${i.id}">حذف</button></td>`;
+      tr.querySelector('.edit').addEventListener('click', ()=> startEditRaw(tr, i));
+      tr.querySelector('.btn-outline-danger').addEventListener('click', ()=> onDeleteRaw(i.id));
       tb.appendChild(tr);
     }
+  }
+
+  function startEditRaw(tr, i){
+    tr.innerHTML = '';
+    const tdPkg = document.createElement('td'); const sel = document.createElement('select'); sel.className='form-select'; sel.innerHTML = ($state.packages||[]).map(p=> `<option value="${p.id}" ${String(p.id)===String(i.packageId)?'selected':''}>${p.name}</option>`).join(''); tdPkg.appendChild(sel);
+    const tdQty = document.createElement('td'); const inQty = document.createElement('input'); inQty.className='form-control'; inQty.value = Number(i.quantity||0); tdQty.appendChild(inQty);
+    const tdDate = document.createElement('td'); const inDate = document.createElement('input'); inDate.type='date'; inDate.className='form-control'; inDate.value = i.createdAt||''; tdDate.appendChild(inDate);
+    const tdAct = document.createElement('td'); const bSave=document.createElement('button'); bSave.className='btn btn-sm btn-primary me-1'; bSave.textContent='حفظ'; const bCancel=document.createElement('button'); bCancel.className='btn btn-sm btn-secondary'; bCancel.textContent='إلغاء'; tdAct.appendChild(bSave); tdAct.appendChild(bCancel);
+    tr.appendChild(tdPkg); tr.appendChild(tdQty); tr.appendChild(tdDate); tr.appendChild(tdAct);
+    bSave.addEventListener('click', ()=>{ const t = ($state.inventory||[]).find(x=> x.id===i.id); if (!t) return; t.packageId = sel.value; t.quantity = Number(String(inQty.value).replace(/,/g,''))||0; t.createdAt = ($dates?$dates.formatDateEn(inDate.value):inDate.value); $storage.save(); renderRaw(); renderRows(); document.dispatchEvent(new CustomEvent('state:changed')); });
+    bCancel.addEventListener('click', renderRaw);
   }
 
   function onDeleteRaw(id){

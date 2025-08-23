@@ -66,15 +66,49 @@
       const pkg = ($state.packages||[]).find(p=> String(p.id)===String(s.packageId));
       const store = ($state.stores||[]).find(st=> String(st.id)===String(s.storeId));
       const tr = document.createElement('tr');
-      tr.innerHTML = '<td>'+ (store?store.name:(s.storeId||'')) +'</td>'
-                   + '<td>'+ (pkg?pkg.name:(s.packageId||'')) +'</td>'
-                   + '<td>'+ (s.quantity||0) +'</td>'
-                   + '<td class="currency">'+ Number(s.total||0).toLocaleString('en-US') +'</td>'
-                   + '<td>'+ (s.date||'') +'</td>'
-                   + '<td><button class="btn btn-sm btn-outline-danger" data-id="'+s.id+'">حذف</button></td>';
-      tr.querySelector('button').addEventListener('click', ()=> onDelete(s.id));
+      tr.innerHTML = '<td class="cell-store">'+ (store?store.name:(s.storeId||'')) +'</td>'
+                   + '<td class="cell-pkg">'+ (pkg?pkg.name:(s.packageId||'')) +'</td>'
+                   + '<td class="cell-qty">'+ (s.quantity||0) +'</td>'
+                   + '<td class="cell-total currency">'+ Number(s.total||0).toLocaleString('en-US') +'</td>'
+                   + '<td class="cell-date">'+ (s.date||'') +'</td>'
+                   + '<td><button class="btn btn-sm btn-outline-secondary me-1 edit">تعديل</button><button class="btn btn-sm btn-outline-danger" data-id="'+s.id+'">حذف</button></td>';
+      tr.querySelector('.edit').addEventListener('click', ()=> startEdit(tr, s));
+      tr.querySelector('.btn-outline-danger').addEventListener('click', ()=> onDelete(s.id));
       tb.appendChild(tr);
     }
+  }
+
+  function startEdit(tr, s){
+    tr.innerHTML='';
+    const tdStore = document.createElement('td'); const selStore=document.createElement('select'); selStore.className='form-select'; selStore.innerHTML = ($state.stores||[]).map(st=> `<option value="${st.id}" ${String(st.id)===String(s.storeId)?'selected':''}>${st.name}</option>`).join(''); tdStore.appendChild(selStore);
+    const tdPkg = document.createElement('td'); const selPkg=document.createElement('select'); selPkg.className='form-select'; selPkg.innerHTML = ($state.packages||[]).map(p=> `<option value="${p.id}" ${String(p.id)===String(s.packageId)?'selected':''}>${p.name}</option>`).join(''); tdPkg.appendChild(selPkg);
+    const tdQty = document.createElement('td'); const inQty=document.createElement('input'); inQty.className='form-control'; inQty.value=Number(s.quantity||0); tdQty.appendChild(inQty);
+    const tdTotal = document.createElement('td'); tdTotal.className='currency'; tdTotal.textContent = Number(s.total||0).toLocaleString('en-US');
+    const tdDate = document.createElement('td'); const inDate=document.createElement('input'); inDate.type='date'; inDate.className='form-control'; inDate.value = s.date||''; tdDate.appendChild(inDate);
+    const tdAct = document.createElement('td'); const bSave=document.createElement('button'); bSave.className='btn btn-sm btn-primary me-1'; bSave.textContent='حفظ'; const bCancel=document.createElement('button'); bCancel.className='btn btn-sm btn-secondary'; bCancel.textContent='إلغاء'; tdAct.appendChild(bSave); tdAct.appendChild(bCancel);
+    tr.appendChild(tdStore); tr.appendChild(tdPkg); tr.appendChild(tdQty); tr.appendChild(tdTotal); tr.appendChild(tdDate); tr.appendChild(tdAct);
+
+    function recalc(){
+      const pkg = ($state.packages||[]).find(p=> String(p.id)===String(selPkg.value));
+      const unit = priceForStore(pkg, selStore.value); const qty = Number(String(inQty.value).replace(/,/g,''))||0; tdTotal.textContent = (unit*qty).toLocaleString('en-US');
+    }
+    selStore.addEventListener('change', recalc); selPkg.addEventListener('change', recalc); inQty.addEventListener('input', recalc);
+
+    bSave.addEventListener('click', ()=>{
+      const target = $state.sales.find(x=> x.id===s.id); if (!target) return;
+      // return old qty to inventory
+      if (s.packageId && s.quantity){ $engine.addInventory(s.packageId, s.quantity, s.date); }
+      // compute new
+      const newPkg = selPkg.value; const newStore = selStore.value; const newQty = Number(String(inQty.value).replace(/,/g,''))||0; const newDate = ($dates?$dates.formatDateEn(inDate.value):inDate.value);
+      if (newQty<=0){ alert('كمية غير صحيحة'); return; }
+      // deduct new if available
+      if (!$engine.canDeduct(newPkg, newQty)){ alert('الكمية غير متوفرة في المخزون'); return; }
+      $engine.deductInventory(newPkg, newQty);
+      const pkgObj = ($state.packages||[]).find(p=> String(p.id)===String(newPkg)); const unit = priceForStore(pkgObj, newStore); const newTotal = unit * newQty;
+      target.storeId = newStore; target.packageId = newPkg; target.quantity = newQty; target.date = newDate; target.total = newTotal;
+      $storage.save(); renderRows(); render(); document.dispatchEvent(new CustomEvent('state:changed'));
+    });
+    bCancel.addEventListener('click', renderRows);
   }
 
   function onAdd(){
