@@ -229,6 +229,26 @@ document.addEventListener('DOMContentLoaded', function () {
   window.addEventListener('resize', function () { if (window.innerWidth >= 769) closeDrawer(); });
 });
 
+// تفويض أزرار الإضافة/الحفظ/التصدير والاستيراد لضمان عملها دائمًا
+(function(){
+  function on(id, handler){ document.addEventListener('click', function(ev){ const el = ev.target.closest && ev.target.closest('#'+id); if (!el) return; ev.preventDefault(); try{ handler(el); }catch(_){} }); }
+  on('addPackageBtn', ()=> { if (typeof addPackage==='function') addPackage(); });
+  on('savePackageBtn', ()=> { if (typeof savePackage==='function') savePackage(); });
+  on('addInventoryBtn', ()=> { if (typeof addInventory==='function') addInventory(); });
+  on('saveInventoryBtn', ()=> { if (typeof saveInventory==='function') saveInventory(); });
+  on('addStoreBtn', ()=> { if (typeof addStore==='function') addStore(); });
+  on('saveStoreBtn', ()=> { if (typeof saveStore==='function') saveStore(); });
+  on('addExpenseBtn', ()=> { if (typeof addExpense==='function') addExpense(); });
+  on('saveExpenseBtn', ()=> { if (typeof saveExpense==='function') saveExpense(); });
+  on('saveSaleBtn', ()=> { if (typeof saveSale==='function') saveSale(); });
+  on('savePaymentBtn', ()=> { if (typeof savePayment==='function') savePayment(); });
+  on('exportDataBtn', ()=> { if (typeof exportData==='function') exportData(); });
+  on('importDataBtn', ()=> { if (typeof importData==='function') importData(); });
+  // ديناميكيات داخل تفاصيل المحل
+  on('addSaleBtn', el=> { const sid = el.getAttribute('data-store'); if (typeof addSale==='function') addSale(sid||''); });
+  on('addPaymentBtn', el=> { const sid = el.getAttribute('data-store'); if (typeof addPayment==='function') addPayment(sid||''); });
+})();
+
 function setTextSafe(el, text){ if (el) el.textContent = text; }
 
 // تصدير الدوال للنطاق العام
