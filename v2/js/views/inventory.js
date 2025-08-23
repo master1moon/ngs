@@ -26,10 +26,11 @@
 
   function renderRows(){
     const tb = document.getElementById('invTable'); if (!tb) return; tb.innerHTML='';
+    let lowThreshold = 200; try{ const s = JSON.parse(localStorage.getItem('v2_settings')||'{}'); if (s && s.lowStock) lowThreshold = Number(s.lowStock)||200; }catch(_){ }
     for (const p of $state.packages){
       const qty = $engine.getInventory(p.id);
       const tr = document.createElement('tr');
-      const low = qty < 200; // threshold
+      const low = qty < lowThreshold; // threshold
       tr.innerHTML = `<td>${p.name}</td><td ${low? 'class="text-danger"':''}>${qty.toLocaleString('en-US')}</td>`;
       tb.appendChild(tr);
     }
