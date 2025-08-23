@@ -15,7 +15,7 @@
       + '</div>'
       + '</div></div>'
       + '<div class="table-responsive mt-3">'
-      + '  <table class="table table-sm align-middle"><thead><tr><th>الاسم</th><th>السعر</th><th>التاريخ</th></tr></thead><tbody id="pkgTable"></tbody></table>'
+      + '  <table class="table table-sm align-middle"><thead><tr><th>الاسم</th><th>السعر</th><th>التاريخ</th><th>إجراءات</th></tr></thead><tbody id="pkgTable"></tbody></table>'
       + '</div>';
 
     if (window.$dates && $dates.PackageDate) $dates.PackageDate.set('');
@@ -29,7 +29,9 @@
       const tr = document.createElement('tr');
       tr.innerHTML = '<td>'+ (p.name||'') +'</td>'
                    + '<td class="currency">'+ Number(p.retailPrice||0).toLocaleString('en-US') +'</td>'
-                   + '<td>'+ (p.createdAt||'') +'</td>';
+                   + '<td>'+ (p.createdAt||'') +'</td>'
+                   + '<td><button class="btn btn-sm btn-outline-danger" data-id="'+p.id+'">حذف</button></td>';
+      tr.querySelector('button').addEventListener('click', ()=> onDelete(p.id));
       tb.appendChild(tr);
     }
   }
@@ -42,6 +44,14 @@
     window.$state.packages.push({ id: 'pkg_'+Date.now(), name, retailPrice: retail, createdAt: date });
     window.$storage.save();
     document.getElementById('pkgName').value=''; document.getElementById('pkgRetail').value=''; if ($dates && $dates.PackageDate) $dates.PackageDate.set('');
+    renderRows();
+    document.dispatchEvent(new CustomEvent('state:changed'));
+  }
+
+  function onDelete(id){
+    if (!confirm('حذف هذه الباقة؟')) return;
+    window.$state.packages = window.$state.packages.filter(x=> x.id!==id);
+    window.$storage.save();
     renderRows();
     document.dispatchEvent(new CustomEvent('state:changed'));
   }

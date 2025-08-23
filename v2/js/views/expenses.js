@@ -15,7 +15,7 @@
       + '</div>'
       + '</div></div>'
       + '<div class="table-responsive mt-3">\n'
-      + '  <table class="table table-sm align-middle"><thead><tr><th>النوع</th><th>المبلغ</th><th>التاريخ</th></tr></thead><tbody id="expensesTable"></tbody></table>'
+      + '  <table class="table table-sm align-middle"><thead><tr><th>النوع</th><th>المبلغ</th><th>التاريخ</th><th>إجراءات</th></tr></thead><tbody id="expensesTable"></tbody></table>'}
       + '</div>';
 
     if ($dates && $dates.ExpenseDate) $dates.ExpenseDate.set('');
@@ -29,7 +29,9 @@
       const tr = document.createElement('tr');
       tr.innerHTML = '<td>'+ (e.type||'') +'</td>'
                    + '<td class="currency">'+ Number(e.amount||0).toLocaleString('en-US') +'</td>'
-                   + '<td>'+ (e.date||'') +'</td>';
+                   + '<td>'+ (e.date||'') +'</td>'
+                   + '<td><button class="btn btn-sm btn-outline-danger" data-id="'+e.id+'">حذف</button></td>';
+      tr.querySelector('button').addEventListener('click', ()=> onDelete(e.id));
       tb.appendChild(tr);
     }
   }
@@ -42,6 +44,14 @@
     $state.expenses.push({ id: 'exp_'+Date.now(), type, amount, date });
     $storage.save();
     document.getElementById('expenseType').value=''; document.getElementById('expenseAmount').value=''; if ($dates && $dates.ExpenseDate) $dates.ExpenseDate.set('');
+    renderRows();
+    document.dispatchEvent(new CustomEvent('state:changed'));
+  }
+
+  function onDelete(id){
+    if (!confirm('حذف هذا المصروف؟')) return;
+    $state.expenses = $state.expenses.filter(x=> x.id!==id);
+    $storage.save();
     renderRows();
     document.dispatchEvent(new CustomEvent('state:changed'));
   }

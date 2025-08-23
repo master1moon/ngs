@@ -11,7 +11,7 @@
       + '  <div class="col-md-3"><label class="form-label">من</label><input type="date" id="repFrom" class="form-control" placeholder="YYYY-MM-DD"></div>'
       + '  <div class="col-md-3"><label class="form-label">إلى</label><input type="date" id="repTo" class="form-control" placeholder="YYYY-MM-DD"></div>'
       + '  <div class="col-md-3"><button id="applyRange" class="btn btn-primary w-100">تطبيق</button></div>'
-      + '  <div class="col-md-3 d-flex gap-2"><button id="exportJson" class="btn btn-outline-secondary w-100">تصدير JSON</button><button id="exportTxt" class="btn btn-outline-secondary w-100">تصدير TXT</button></div>'
+      + '  <div class="col-md-3 d-flex gap-2"><button id="exportJson" class="btn btn-outline-secondary w-100">تصدير JSON</button><button id="exportTxt" class="btn btn-outline-secondary w-100">تصدير TXT</button><button id="printReport" class="btn btn-outline-dark w-100">طباعة</button></div>'
       + '</div>'
       + '<div class="mt-3" id="repSummary"></div>'
       + '</div></div>'
@@ -26,6 +26,7 @@
     document.getElementById('applyRange').addEventListener('click', update);
     document.getElementById('exportJson').addEventListener('click', ()=> exportData('json'));
     document.getElementById('exportTxt').addEventListener('click', ()=> exportData('txt'));
+    document.getElementById('printReport').addEventListener('click', ()=> printReport());
 
     update();
   }
@@ -104,6 +105,17 @@
       const blob = new Blob([txt], {type:'text/plain'});
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'reports.txt'; a.click();
     }
+  }
+
+  function printReport(){
+    const r = getRange();
+    const w = window.open('', '_blank');
+    w.document.write('<html dir="rtl" lang="ar"><head><title>طباعة تقرير</title><style>body{font-family:Arial;padding:16px} table{width:100%;border-collapse:collapse} th,td{border:1px solid #ccc;padding:6px;text-align:right}</style></head><body>');
+    w.document.write('<h3>التقرير '+(r.from||'')+' إلى '+(r.to||'')+'</h3>');
+    w.document.write(document.getElementById('repSummary').innerHTML);
+    w.document.write(document.getElementById('repTables').innerHTML);
+    w.document.write('</body></html>');
+    w.document.close(); w.focus(); w.print();
   }
 
   document.addEventListener('DOMContentLoaded', render);

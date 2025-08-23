@@ -16,7 +16,7 @@
       + '</div>'
       + '</div></div>'
       + '<div class="table-responsive mt-3">\n'
-      + '  <table class="table table-sm align-middle"><thead><tr><th>المحل</th><th>المبلغ</th><th>التاريخ</th></tr></thead><tbody id="paymentsTable"></tbody></table>'
+      + '  <table class="table table-sm align-middle"><thead><tr><th>المحل</th><th>المبلغ</th><th>التاريخ</th><th>إجراءات</th></tr></thead><tbody id="paymentsTable"></tbody></table>'
       + '</div>';
 
     if ($dates && $dates.PaymentDate) $dates.PaymentDate.set('');
@@ -31,7 +31,9 @@
       const tr = document.createElement('tr');
       tr.innerHTML = '<td>'+ (st?st.name:(p.storeId||'')) +'</td>'
                    + '<td class="currency">'+ Number(p.amount||0).toLocaleString('en-US') +'</td>'
-                   + '<td>'+ (p.date||'') +'</td>';
+                   + '<td>'+ (p.date||'') +'</td>'
+                   + '<td><button class="btn btn-sm btn-outline-danger" data-id="'+p.id+'">حذف</button></td>';
+      tr.querySelector('button').addEventListener('click', ()=> onDelete(p.id));
       tb.appendChild(tr);
     }
   }
@@ -46,6 +48,14 @@
     document.getElementById('paymentAmount').value=''; if ($dates && $dates.PaymentDate) $dates.PaymentDate.set('');
     document.dispatchEvent(new CustomEvent('state:changed'));
     renderRows();
+  }
+
+  function onDelete(id){
+    if (!confirm('حذف هذا التسديد؟')) return;
+    $state.payments = $state.payments.filter(x=> x.id!==id);
+    $storage.save();
+    renderRows();
+    document.dispatchEvent(new CustomEvent('state:changed'));
   }
 
   document.addEventListener('DOMContentLoaded', render);

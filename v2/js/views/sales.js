@@ -19,7 +19,7 @@
       + '<div class="form-text mt-2" id="saleHint"></div>'
       + '</div></div>'
       + '<div class="table-responsive mt-3">\n'
-      + '  <table class="table table-sm align-middle"><thead><tr><th>المحل</th><th>الباقة</th><th>الكمية</th><th>الإجمالي</th><th>التاريخ</th></tr></thead><tbody id="salesTable"></tbody></table>'
+      + '  <table class="table table-sm align-middle"><thead><tr><th>المحل</th><th>الباقة</th><th>الكمية</th><th>الإجمالي</th><th>التاريخ</th><th>إجراءات</th></tr></thead><tbody id="salesTable"></tbody></table>'}
       + '</div>';
 
     if ($dates && $dates.SaleDate) $dates.SaleDate.set('');
@@ -65,7 +65,9 @@
                    + '<td>'+ (pkg?pkg.name:(s.packageId||'')) +'</td>'
                    + '<td>'+ (s.quantity||0) +'</td>'
                    + '<td class="currency">'+ Number(s.total||0).toLocaleString('en-US') +'</td>'
-                   + '<td>'+ (s.date||'') +'</td>';
+                   + '<td>'+ (s.date||'') +'</td>'
+                   + '<td><button class="btn btn-sm btn-outline-danger" data-id="'+s.id+'">حذف</button></td>';
+      tr.querySelector('button').addEventListener('click', ()=> onDelete(s.id));
       tb.appendChild(tr);
     }
   }
@@ -84,6 +86,16 @@
     $state.sales.push({ id: 'sale_'+Date.now(), storeId, packageId, quantity: qty, total, date });
     $storage.save();
     document.getElementById('saleQty').value=''; if ($dates && $dates.SaleDate) $dates.SaleDate.set('');
+    renderRows();
+    document.dispatchEvent(new CustomEvent('state:changed'));
+  }
+
+  function onDelete(id){
+    if (!confirm('حذف هذا البيع؟')) return;
+    const s = $state.sales.find(x=> x.id===id);
+    if (s && s.packageId && s.quantity){ $engine.addInventory(s.packageId, s.quantity, s.date); }
+    $state.sales = $state.sales.filter(x=> x.id!==id);
+    $storage.save();
     renderRows();
     document.dispatchEvent(new CustomEvent('state:changed'));
   }
