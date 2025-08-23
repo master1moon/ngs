@@ -34,13 +34,30 @@
     for (const p of arr){
       const st = ($state.stores||[]).find(s=> String(s.id)===String(p.storeId));
       const tr = document.createElement('tr');
-      tr.innerHTML = '<td>'+ (st?st.name:(p.storeId||'')) +'</td>'
-                   + '<td class="currency">'+ Number(p.amount||0).toLocaleString('en-US') +'</td>'
-                   + '<td>'+ (p.date||'') +'</td>'
-                   + '<td><button class="btn btn-sm btn-outline-danger" data-id="'+p.id+'">حذف</button></td>';
-      tr.querySelector('button').addEventListener('click', ()=> onDelete(p.id));
+      tr.innerHTML = '<td class="cell-store">'+ (st?st.name:(p.storeId||'')) +'</td>'
+                   + '<td class="cell-amount currency">'+ Number(p.amount||0).toLocaleString('en-US') +'</td>'
+                   + '<td class="cell-date">'+ (p.date||'') +'</td>'
+                   + '<td><button class="btn btn-sm btn-outline-secondary me-1 edit" data-id="'+p.id+'">تعديل</button><button class="btn btn-sm btn-outline-danger" data-id="'+p.id+'">حذف</button></td>';
+      tr.querySelector('.edit').addEventListener('click', ()=> startEdit(tr, p));
+      tr.querySelector('.btn-outline-danger').addEventListener('click', ()=> onDelete(p.id));
       tb.appendChild(tr);
     }
+  }
+
+  function startEdit(tr, p){
+    tr.innerHTML = '';
+    const tdStore = document.createElement('td'); const sel = document.createElement('select'); sel.className='form-select';
+    sel.innerHTML = ($state.stores||[]).map(s=> `<option value="${s.id}" ${String(s.id)===String(p.storeId)?'selected':''}>${s.name}</option>`).join(''); tdStore.appendChild(sel);
+    const tdAmount = document.createElement('td'); const inAmount = document.createElement('input'); inAmount.className='form-control'; inAmount.value = Number(p.amount||0); tdAmount.appendChild(inAmount);
+    const tdDate = document.createElement('td'); const inDate = document.createElement('input'); inDate.type='date'; inDate.className='form-control'; inDate.value = p.date||''; tdDate.appendChild(inDate);
+    const tdAct = document.createElement('td'); const bSave = document.createElement('button'); bSave.className='btn btn-sm btn-primary me-1'; bSave.textContent='حفظ'; const bCancel=document.createElement('button'); bCancel.className='btn btn-sm btn-secondary'; bCancel.textContent='إلغاء'; tdAct.appendChild(bSave); tdAct.appendChild(bCancel);
+    tr.appendChild(tdStore); tr.appendChild(tdAmount); tr.appendChild(tdDate); tr.appendChild(tdAct);
+    bSave.addEventListener('click', ()=>{
+      const target = $state.payments.find(x=> x.id===p.id); if (!target) return;
+      target.storeId = sel.value; target.amount = Number(String(inAmount.value).replace(/,/g,''))||0; target.date = ($dates?$dates.formatDateEn(inDate.value):inDate.value);
+      $storage.save(); renderRows(); document.dispatchEvent(new CustomEvent('state:changed'));
+    });
+    bCancel.addEventListener('click', renderRows);
   }
 
   function onAdd(){

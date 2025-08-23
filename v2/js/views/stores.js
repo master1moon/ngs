@@ -25,13 +25,25 @@
     for (const s of $state.stores){
       const bal = $engine.getStoreBalance(s.id);
       const tr = document.createElement('tr');
-      tr.innerHTML = '<td>'+ (s.name||'') +'</td>'
-                   + '<td>'+ (s.priceType||'retail') +'</td>'
+      tr.innerHTML = '<td class="cell-name">'+ (s.name||'') +'</td>'
+                   + '<td class="cell-priceType">'+ (s.priceType||'retail') +'</td>'
                    + '<td class="currency">'+ Number(bal||0).toLocaleString('en-US') +'</td>'
-                   + '<td><button class="btn btn-sm btn-outline-danger" data-id="'+s.id+'">حذف</button></td>';
-      tr.querySelector('button').addEventListener('click', ()=> onDelete(s.id));
+                   + '<td><button class="btn btn-sm btn-outline-secondary me-1 edit">تعديل</button><button class="btn btn-sm btn-outline-danger" data-id="'+s.id+'">حذف</button></td>';
+      tr.querySelector('.edit').addEventListener('click', ()=> startEdit(tr, s));
+      tr.querySelector('.btn-outline-danger').addEventListener('click', ()=> onDelete(s.id));
       tb.appendChild(tr);
     }
+  }
+
+  function startEdit(tr, s){
+    tr.innerHTML = '';
+    const tdName = document.createElement('td'); const inName = document.createElement('input'); inName.className='form-control'; inName.value = s.name||''; tdName.appendChild(inName);
+    const tdType = document.createElement('td'); const sel = document.createElement('select'); sel.className='form-select'; sel.innerHTML = '<option value="retail">قطاعي</option><option value="wholesale">جملة</option><option value="distributor">موزع</option>'; sel.value = s.priceType||'retail'; tdType.appendChild(sel);
+    const tdBal = document.createElement('td'); tdBal.className='currency'; tdBal.textContent = Number($engine.getStoreBalance(s.id)||0).toLocaleString('en-US');
+    const tdAct = document.createElement('td'); const bSave=document.createElement('button'); bSave.className='btn btn-sm btn-primary me-1'; bSave.textContent='حفظ'; const bCancel=document.createElement('button'); bCancel.className='btn btn-sm btn-secondary'; bCancel.textContent='إلغاء'; tdAct.appendChild(bSave); tdAct.appendChild(bCancel);
+    tr.appendChild(tdName); tr.appendChild(tdType); tr.appendChild(tdBal); tr.appendChild(tdAct);
+    bSave.addEventListener('click', ()=>{ const t = $state.stores.find(x=> x.id===s.id); if (!t) return; t.name = inName.value.trim(); t.priceType = sel.value; $storage.save(); renderRows(); document.dispatchEvent(new CustomEvent('state:changed')); });
+    bCancel.addEventListener('click', renderRows);
   }
 
   function onAdd(){

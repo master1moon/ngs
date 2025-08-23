@@ -31,15 +31,33 @@
     const tb = document.getElementById('pkgTable'); if (!tb) return; tb.innerHTML='';
     for (const p of window.$state.packages){
       const tr = document.createElement('tr');
-      tr.innerHTML = '<td>'+ (p.name||'') +'</td>'
-                   + '<td class="currency">'+ Number(p.retailPrice||0).toLocaleString('en-US') +'</td>'
-                   + '<td class="currency">'+ Number(p.wholesalePrice||0).toLocaleString('en-US') +'</td>'
-                   + '<td class="currency">'+ Number(p.distributorPrice||0).toLocaleString('en-US') +'</td>'
-                   + '<td>'+ (p.createdAt||'') +'</td>'
-                   + '<td><button class="btn btn-sm btn-outline-danger" data-id="'+p.id+'">حذف</button></td>';
-      tr.querySelector('button').addEventListener('click', ()=> onDelete(p.id));
+      tr.innerHTML = '<td class="cell-name">'+ (p.name||'') +'</td>'
+                   + '<td class="cell-retail currency">'+ Number(p.retailPrice||0).toLocaleString('en-US') +'</td>'
+                   + '<td class="cell-wholesale currency">'+ Number(p.wholesalePrice||0).toLocaleString('en-US') +'</td>'
+                   + '<td class="cell-distributor currency">'+ Number(p.distributorPrice||0).toLocaleString('en-US') +'</td>'
+                   + '<td class="cell-date">'+ (p.createdAt||'') +'</td>'
+                   + '<td><button class="btn btn-sm btn-outline-secondary me-1 edit">تعديل</button><button class="btn btn-sm btn-outline-danger" data-id="'+p.id+'">حذف</button></td>';
+      tr.querySelector('.edit').addEventListener('click', ()=> startEdit(tr, p));
+      tr.querySelector('.btn-outline-danger').addEventListener('click', ()=> onDelete(p.id));
       tb.appendChild(tr);
     }
+  }
+
+  function startEdit(tr, p){
+    tr.innerHTML = '';
+    const tdName = document.createElement('td'); const inName = document.createElement('input'); inName.className='form-control'; inName.value = p.name||''; tdName.appendChild(inName);
+    const tdRetail = document.createElement('td'); const inRetail = document.createElement('input'); inRetail.className='form-control'; inRetail.value = Number(p.retailPrice||0); tdRetail.appendChild(inRetail);
+    const tdWholesale = document.createElement('td'); const inWholesale = document.createElement('input'); inWholesale.className='form-control'; inWholesale.value = Number(p.wholesalePrice||0); tdWholesale.appendChild(inWholesale);
+    const tdDistributor = document.createElement('td'); const inDistributor = document.createElement('input'); inDistributor.className='form-control'; inDistributor.value = Number(p.distributorPrice||0); tdDistributor.appendChild(inDistributor);
+    const tdDate = document.createElement('td'); const inDate = document.createElement('input'); inDate.type='date'; inDate.className='form-control'; inDate.value = p.createdAt||''; tdDate.appendChild(inDate);
+    const tdAct = document.createElement('td'); const bSave=document.createElement('button'); bSave.className='btn btn-sm btn-primary me-1'; bSave.textContent='حفظ'; const bCancel=document.createElement('button'); bCancel.className='btn btn-sm btn-secondary'; bCancel.textContent='إلغاء'; tdAct.appendChild(bSave); tdAct.appendChild(bCancel);
+    tr.appendChild(tdName); tr.appendChild(tdRetail); tr.appendChild(tdWholesale); tr.appendChild(tdDistributor); tr.appendChild(tdDate); tr.appendChild(tdAct);
+    bSave.addEventListener('click', ()=>{
+      const target = $state.packages.find(x=> x.id===p.id); if (!target) return;
+      target.name = inName.value.trim(); target.retailPrice = Number(String(inRetail.value).replace(/,/g,''))||0; target.wholesalePrice = Number(String(inWholesale.value).replace(/,/g,''))||0; target.distributorPrice = Number(String(inDistributor.value).replace(/,/g,''))||0; target.createdAt = ($dates?$dates.formatDateEn(inDate.value):inDate.value);
+      $storage.save(); renderRows(); document.dispatchEvent(new CustomEvent('state:changed'));
+    });
+    bCancel.addEventListener('click', renderRows);
   }
 
   function onAdd(){
