@@ -32,13 +32,31 @@
     if (q) arr = arr.filter(e=> [e.type||'', String(e.amount||''), e.date||''].join(' ').toLowerCase().includes(q));
     for (const e of arr){
       const tr = document.createElement('tr');
-      tr.innerHTML = '<td>'+ (e.type||'') +'</td>'
-                   + '<td class="currency">'+ Number(e.amount||0).toLocaleString('en-US') +'</td>'
-                   + '<td>'+ (e.date||'') +'</td>'
+      tr.innerHTML = '<td class="cell-type">'+ (e.type||'') +'</td>'
+                   + '<td class="cell-amount currency">'+ Number(e.amount||0).toLocaleString('en-US') +'</td>'
+                   + '<td class="cell-date">'+ (e.date||'') +'</td>'
                    + '<td><button class="btn btn-sm btn-outline-danger" data-id="'+e.id+'">حذف</button></td>';
       tr.querySelector('button').addEventListener('click', ()=> onDelete(e.id));
+      tr.querySelector('.cell-type').addEventListener('dblclick', ()=> startEdit(tr, e));
+      tr.querySelector('.cell-amount').addEventListener('dblclick', ()=> startEdit(tr, e));
+      tr.querySelector('.cell-date').addEventListener('dblclick', ()=> startEdit(tr, e));
       tb.appendChild(tr);
     }
+  }
+
+  function startEdit(tr, e){
+    tr.innerHTML = '';
+    const tdType = document.createElement('td'); const inType = document.createElement('input'); inType.className='form-control'; inType.value = e.type||''; tdType.appendChild(inType);
+    const tdAmount = document.createElement('td'); const inAmount = document.createElement('input'); inAmount.className='form-control'; inAmount.value = Number(e.amount||0); tdAmount.appendChild(inAmount);
+    const tdDate = document.createElement('td'); const inDate = document.createElement('input'); inDate.type='date'; inDate.className='form-control'; inDate.value = e.date||''; tdDate.appendChild(inDate);
+    const tdAct = document.createElement('td'); const bSave = document.createElement('button'); bSave.className='btn btn-sm btn-primary me-1'; bSave.textContent='حفظ'; const bCancel = document.createElement('button'); bCancel.className='btn btn-sm btn-secondary'; bCancel.textContent='إلغاء'; tdAct.appendChild(bSave); tdAct.appendChild(bCancel);
+    tr.appendChild(tdType); tr.appendChild(tdAmount); tr.appendChild(tdDate); tr.appendChild(tdAct);
+    bSave.addEventListener('click', ()=>{
+      const ne = $state.expenses.find(x=> x.id===e.id); if (!ne) return;
+      ne.type = inType.value.trim(); ne.amount = Number(String(inAmount.value).replace(/,/g,''))||0; ne.date = ($dates?$dates.formatDateEn(inDate.value):inDate.value);
+      $storage.save(); renderRows(); document.dispatchEvent(new CustomEvent('state:changed'));
+    });
+    bCancel.addEventListener('click', renderRows);
   }
 
   function onAdd(){
