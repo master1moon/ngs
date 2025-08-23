@@ -42,6 +42,7 @@
       case 'payments': $state.payments.push(item); break;
       case 'expenses': $state.expenses.push(item); break;
       case 'stores': $state.stores.push(item); break;
+      case 'partners': $state.partners.push(item); break;
     }
     $storage.save();
   };
