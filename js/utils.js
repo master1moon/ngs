@@ -30,9 +30,18 @@ function formatDateEn(dateStr) {
       if (m.isValid()) return m.format('YYYY-MM-DD');
     }
   } catch (_) {}
-  // fallback: simple cleanup
-  const m = /^\d{4}-\d{1,2}-\d{1,2}$/.test(raw) ? raw : raw.replace(/\D/g, '').replace(/(\d{4})(\d{2})(\d{2}).*/, '$1-$2-$3');
-  return m;
+  // fallback: normalize and pad
+  let out = raw;
+  if (!/^\d{4}-\d{1,2}-\d{1,2}$/.test(out)) {
+    const n = raw.replace(/\D/g, '');
+    if (n.length >= 8) out = n.slice(0,4)+'-'+n.slice(4,6)+'-'+n.slice(6,8);
+  }
+  const parts = out.split('-');
+  if (parts.length === 3) {
+    const y = parts[0]; const m = ('0'+parseInt(parts[1]||'0',10)).slice(-2); const d = ('0'+parseInt(parts[2]||'0',10)).slice(-2);
+    out = `${y}-${m}-${d}`;
+  }
+  return out;
 }
 
 // دوال مساعدة متخصصة للحقول المختلفة لضمان الاتساق ومنع الأخطاء
@@ -251,33 +260,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function setTextSafe(el, text){ if (el) el.textContent = text; }
 
-// زر تقويم سريع لكل حقول التاريخ (اليوم/فتح التقويم)
-function attachQuickCalendarFor(inputId){
-  const inp = document.getElementById(inputId); if (!inp || inp.dataset.qcAttached) return;
-  try {
-    // أنشئ input-group دون كسر الـ id
-    const parent = inp.parentElement; if (!parent) return;
-    const group = document.createElement('div'); group.className = 'input-group';
-    parent.insertBefore(group, inp);
-    group.appendChild(inp);
-    const btnCal = document.createElement('button'); btnCal.type='button'; btnCal.className='btn btn-outline-secondary'; btnCal.textContent='تقويم';
-    const btnToday = document.createElement('button'); btnToday.type='button'; btnToday.className='btn btn-outline-primary'; btnToday.textContent='اليوم';
-    group.appendChild(btnCal); group.appendChild(btnToday);
-    btnCal.addEventListener('click', function(){ try{ if (typeof inp.showPicker==='function') inp.showPicker(); else { inp.focus(); inp.click(); } }catch(_){ inp.focus(); } });
-    btnToday.addEventListener('click', function(){ try{ inp.value = (typeof getDefaultDateForAdd==='function') ? getDefaultDateForAdd() : (new Date()).toISOString().slice(0,10); }catch(_){ inp.value = (new Date()).toISOString().slice(0,10); } });
-    inp.dataset.qcAttached = '1';
-  } catch(_){}
-}
-
-function setupQuickCalendarButtons(){
-  ['packageDate','inventoryDate','storeDate','expenseDate','saleDate','paymentDate'].forEach(attachQuickCalendarFor);
-}
-
-if (typeof document!=='undefined'){
-  document.addEventListener('DOMContentLoaded', function(){
-    try { setupQuickCalendarButtons(); }catch(_){ }
-  });
-}
+// تم التراجع عن إضافة زر التقويم السريع بناءً على طلب المستخدم
 
 // تصدير الدوال للنطاق العام
 if (typeof window !== 'undefined') {
