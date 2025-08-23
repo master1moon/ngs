@@ -19,7 +19,7 @@
       + '<div class="row g-2 align-items-end">'
       + '  <div class="col-md-3"><label class="form-label">من</label><input type="date" id="prFrom" class="form-control" placeholder="YYYY-MM-DD"></div>'
       + '  <div class="col-md-3"><label class="form-label">إلى</label><input type="date" id="prTo" class="form-control" placeholder="YYYY-MM-DD"></div>'
-      + '  <div class="col-md-3 d-flex gap-2"><button id="applySplit" class="btn btn-primary w-100">حساب</button><button id="exportPartners" class="btn btn-outline-secondary w-100">تصدير JSON</button></div>'
+      + '  <div class="col-md-3 d-flex gap-2"><button id="applySplit" class="btn btn-primary w-100">حساب</button><button id="exportPartners" class="btn btn-outline-secondary w-100">تصدير JSON</button><button id="printPartners" class="btn btn-outline-dark w-100">طباعة</button></div>'
       + '</div>'
       + '<div class="mt-3" id="partnersSummary"></div>'
       + '<div class="table-responsive mt-2"><table class="table table-sm"><thead><tr><th>الشريك</th><th>الوزن</th><th>النصيب</th></tr></thead><tbody id="partnersTable"></tbody></table></div>'
@@ -28,6 +28,7 @@
     document.getElementById('addPartnerBtn').addEventListener('click', onAdd);
     document.getElementById('applySplit').addEventListener('click', updateSplit);
     document.getElementById('exportPartners').addEventListener('click', exportJson);
+    document.getElementById('printPartners').addEventListener('click', printPartners);
 
     const today = ($dates && $dates.today)? $dates.today(): (new Date()).toISOString().slice(0,10);
     const monthStart = (typeof moment!=='undefined') ? moment().startOf('month').format('YYYY-MM-DD') : today.slice(0,8)+'01';
@@ -99,6 +100,17 @@
     const data = { range: r, partners: $state.partners||[], split: Array.from(document.querySelectorAll('#partnersTable tbody tr')).map(tr => ({ name: tr.children[0].textContent, weight: tr.children[1].textContent, share: tr.children[2].textContent })) };
     const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'partners_split.json'; a.click();
+  }
+
+  function printPartners(){
+    const r = getRange();
+    const w = window.open('', '_blank');
+    w.document.write('<html dir="rtl" lang="ar"><head><title>طباعة توزيع الشركاء</title><style>body{font-family:Arial;padding:16px} table{width:100%;border-collapse:collapse} th,td{border:1px solid #ccc;padding:6px;text-align:right}</style></head><body>');
+    w.document.write('<h3>توزيع الشركاء '+(r.from||'')+' إلى '+(r.to||'')+'</h3>');
+    w.document.write('<div>'+document.getElementById('partnersSummary').innerHTML+'</div>');
+    w.document.write('<div>'+document.querySelector('#partnersView .table-responsive').innerHTML+'</div>');
+    w.document.write('</body></html>');
+    w.document.close(); w.focus(); w.print();
   }
 
   document.addEventListener('DOMContentLoaded', render);

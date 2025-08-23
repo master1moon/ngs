@@ -12,7 +12,7 @@
       + `  <div class="col-md-3"><label class="form-label">المحل</label><select id="stStore" class="form-select"><option value="">اختر المحل</option>${storeOptions}</select></div>`
       + '  <div class="col-md-3"><label class="form-label">من</label><input type="date" id="stFrom" class="form-control" placeholder="YYYY-MM-DD"></div>'
       + '  <div class="col-md-3"><label class="form-label">إلى</label><input type="date" id="stTo" class="form-control" placeholder="YYYY-MM-DD"></div>'
-      + '  <div class="col-md-3 d-flex gap-2"><button id="stApply" class="btn btn-primary w-100">تطبيق</button><button id="stExport" class="btn btn-outline-secondary w-100">تصدير TXT</button><button id="stPrint" class="btn btn-outline-dark w-100">طباعة</button></div>'
+      + '  <div class="col-md-3 d-flex gap-2"><button id="stApply" class="btn btn-primary w-100">تطبيق</button><button id="stExport" class="btn btn-outline-secondary w-100">تصدير TXT</button><button id="stExportXlsx" class="btn btn-outline-success w-100">تصدير Excel</button><button id="stPrint" class="btn btn-outline-dark w-100">طباعة</button></div>'
       + '</div>'
       + '<div class="mt-3" id="stSummary"></div>'
       + '</div></div>'
@@ -27,6 +27,7 @@
 
     document.getElementById('stApply').addEventListener('click', update);
     document.getElementById('stExport').addEventListener('click', exportTxt);
+    document.getElementById('stExportXlsx').addEventListener('click', exportXlsx);
     document.getElementById('stPrint').addEventListener('click', printStatement);
 
     update();
@@ -68,6 +69,18 @@
     const txt = lines.join('\n');
     const blob = new Blob([txt], {type:'text/plain'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'statement.txt'; a.click();
+  }
+
+  function exportXlsx(){
+    const storeId = document.getElementById('stStore').value; const store = ($state.stores||[]).find(s=> String(s.id)===String(storeId));
+    const r = getRange();
+    const sales = ($state.sales||[]).filter(s=> String(s.storeId)===String(storeId) && inRange(s.date, r)).map(s=> ({ type:'بيع', amount: Number(s.total||0), date: s.date||'' }));
+    const pays = ($state.payments||[]).filter(p=> String(p.storeId)===String(storeId) && inRange(p.date, r)).map(p=> ({ type:'تسديد', amount: -1*(Number(p.amount||0)), date: p.date||'' }));
+    const rows = [...sales, ...pays].sort((a,b)=> String(a.date).localeCompare(String(b.date)));
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, (store?store.name:'Statement'));
+    XLSX.writeFile(wb, `statement_${store?store.name:storeId}_${(r.from||'')}_${(r.to||'')}.xlsx`);
   }
 
   function printStatement(){
