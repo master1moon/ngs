@@ -100,7 +100,7 @@
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'reports.json'; a.click();
     } else {
       let txt = `تقارير الفترة ${data.range.from||''} إلى ${data.range.to||''}\n`;
-      txt += `المبيعات: ${data.totals.sales}\nالتسديدات: ${data.totals.payments}\نالمصروفات: ${data.totals.expenses}\n`;
+      txt += `المبيعات: ${data.totals.sales}\nالتسديدات: ${data.totals.payments}\nالمصروفات: ${data.totals.expenses}\n`;
       const blob = new Blob([txt], {type:'text/plain'});
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'reports.txt'; a.click();
     }

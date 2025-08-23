@@ -5,6 +5,9 @@
   document.addEventListener('DOMContentLoaded', function(){
     if (typeof $storage !== 'undefined') { $storage.load(); }
     document.querySelectorAll('input[type="date"]').forEach(inp=>{ inp.setAttribute('lang','en'); inp.style.direction='ltr'; inp.placeholder='YYYY-MM-DD'; });
+    document.addEventListener('state:changed', function(){
+      document.querySelectorAll('input[type="date"]').forEach(inp=>{ inp.setAttribute('lang','en'); inp.style.direction='ltr'; inp.placeholder='YYYY-MM-DD'; });
+    });
 
     // import/export UI
     const bar = document.createElement('div'); bar.className='d-flex gap-2 my-3';
