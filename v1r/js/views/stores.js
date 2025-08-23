@@ -46,6 +46,15 @@
     document.getElementById('storeName').value=''; document.getElementById('storeDate').value='';
     $app.emitChange();
   }
-  function onDelete(id){ if (!confirm('حذف هذا المحل؟')) return; $state.stores = ($state.stores||[]).filter(x=> x.id!==id); $app.emitChange(); }
+  function onDelete(id){
+    if (!confirm('حذف هذا المحل؟')) return;
+    const usedInSales = ($state.sales||[]).some(e=> String(e.storeId)===String(id));
+    const usedInPays = ($state.payments||[]).some(e=> String(e.storeId)===String(id));
+    if (usedInSales || usedInPays){ alert('لا يمكن حذف المحل لوجود ارتباطات في المبيعات أو التسديدات'); return; }
+    const s = ($state.stores||[]).find(x=> x.id===id);
+    if (s){ ($state.trash||($state.trash=[])).push({ id:'trash_'+Date.now(), section:'stores', item:s, deletedAt:new Date().toISOString() }); }
+    $state.stores = ($state.stores||[]).filter(x=> x.id!==id);
+    $app.emitChange();
+  }
   window.$storesView = { render };
 })();

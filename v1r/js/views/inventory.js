@@ -45,11 +45,11 @@
     const tdDate=document.createElement('td'); const inDate=document.createElement('input'); inDate.type='date'; inDate.className='form-control'; inDate.value=i.createdAt||''; tdDate.appendChild(inDate);
     const tdAct=document.createElement('td'); const bSave=document.createElement('button'); bSave.className='btn btn-sm btn-primary me-1'; bSave.textContent='حفظ'; const bCancel=document.createElement('button'); bCancel.className='btn btn-sm btn-secondary'; bCancel.textContent='إلغاء'; tdAct.appendChild(bSave); tdAct.appendChild(bCancel);
     tr.appendChild(tdPkg); tr.appendChild(tdQty); tr.appendChild(tdDate); tr.appendChild(tdAct);
-    bSave.addEventListener('click', ()=>{ const t=($state.inventory||[]).find(x=> x.id===i.id); if (!t) return; t.packageId=sel.value; t.quantity=Number(String(inQty.value).replace(/,/g,''))||0; t.createdAt=($dates?$dates.formatDateEn(inDate.value):inDate.value); $app.emitChange(); });
+    bSave.addEventListener('click', ()=>{ const t=($state.inventory||[]).find(x=> x.id===i.id); if (!t) return; t.packageId=sel.value; t.quantity=$dates.parseNumber(inQty.value); t.createdAt=($dates?$dates.formatDateEn(inDate.value):inDate.value); $app.emitChange(); });
     bCancel.addEventListener('click', renderRaw);
   }
   function onAdd(){
-    const pkg = document.getElementById('invPackage').value; const qty = Number((document.getElementById('invQty').value||'').replace(/,/g,''))||0; const date = ($dates?$dates.formatDateEn(document.getElementById('invDate').value):document.getElementById('invDate').value) || ($dates?$dates.today():new Date().toISOString().slice(0,10));
+    const pkg = document.getElementById('invPackage').value; const qty = $dates.parseNumber(document.getElementById('invQty').value); const date = ($dates?$dates.formatDateEn(document.getElementById('invDate').value):document.getElementById('invDate').value) || ($dates?$dates.today():new Date().toISOString().slice(0,10));
     if (!pkg || qty<=0){ alert('اختر الباقة وأدخل كمية صحيحة'); return; }
     $engine.addInventory(pkg, qty, date); $app.emitChange(); document.getElementById('invQty').value=''; document.getElementById('invDate').value='';
     renderTotals();

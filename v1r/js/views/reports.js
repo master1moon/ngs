@@ -9,7 +9,7 @@
       + '<div class="row g-2 align-items-end">'
       + '  <div class="col-md-3"><label class="form-label">من</label><input id="repFrom" type="date" class="form-control" placeholder="YYYY-MM-DD"></div>'
       + '  <div class="col-md-3"><label class="form-label">إلى</label><input id="repTo" type="date" class="form-control" placeholder="YYYY-MM-DD"></div>'
-      + '  <div class="col-md-6 d-flex gap-2"><button id="applyRep" class="btn btn-primary">تطبيق</button><button id="expJson" class="btn btn-outline-secondary">تصدير JSON</button><button id="expXlsx" class="btn btn-outline-success">تصدير Excel</button><button id="expTxt" class="btn btn-outline-dark">تصدير TXT</button></div>'
+      + '  <div class="col-md-6 d-flex flex-wrap gap-2"><button id="applyRep" class="btn btn-primary">تطبيق</button><button id="expJson" class="btn btn-outline-secondary">تصدير JSON</button><button id="expXlsx" class="btn btn-outline-success">تصدير Excel</button><button id="expTxt" class="btn btn-outline-dark">تصدير TXT</button><button id="backupAll" class="btn btn-outline-primary ms-auto">نسخ احتياطي كامل</button><label class="btn btn-outline-warning mb-0"><input id="importAll" type="file" accept="application/json" hidden>استيراد كامل</label></div>'
       + '</div>'
       + '<div class="mt-3" id="repSummary"></div>'
       + '</div></div>'
@@ -24,6 +24,8 @@
     document.getElementById('expJson').addEventListener('click', ()=> exportData('json'));
     document.getElementById('expXlsx').addEventListener('click', ()=> exportData('xlsx'));
     document.getElementById('expTxt').addEventListener('click', ()=> exportData('txt'));
+    document.getElementById('backupAll').addEventListener('click', backupAll);
+    document.getElementById('importAll').addEventListener('change', importAll);
     update();
   }
   function getRange(){ const f=($dates?$dates.formatDateEn(document.getElementById('repFrom').value):document.getElementById('repFrom').value); const t=($dates?$dates.formatDateEn(document.getElementById('repTo').value):document.getElementById('repTo').value); return {from:f,to:t}; }
@@ -46,5 +48,7 @@
     else if (fmt==='txt'){ let txt = `تقارير ${r.from||''} إلى ${r.to||''}\n`; txt += `المبيعات: ${data.sales.reduce((a,s)=>a+(s.total||0),0)}\nالتسديدات: ${data.payments.reduce((a,p)=>a+(p.amount||0),0)}\nالمصروفات: ${data.expenses.reduce((a,e)=>a+(e.amount||0),0)}\n`; const blob=new Blob([txt],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='reports_v1r.txt'; a.click(); }
     else if (fmt==='xlsx'){ const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.sales), 'Sales'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.payments), 'Payments'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.expenses), 'Expenses'); XLSX.writeFile(wb, `reports_${(r.from||'')}_${(r.to||'')}.xlsx`); }
   }
+  function backupAll(){ const blob=new Blob([JSON.stringify($state,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='backup_v1r.json'; a.click(); }
+  function importAll(evt){ const f=evt.target.files&&evt.target.files[0]; if (!f) return; const reader=new FileReader(); reader.onload=function(){ try{ const obj=JSON.parse(reader.result||'{}'); if (!obj||typeof obj!=='object'){ alert('ملف غير صالح'); return; } Object.assign($state, { packages:[], inventory:[], stores:[], sales:[], payments:[], expenses:[], trash:[] }, obj); $app.emitChange(); alert('تم الاستيراد'); }catch(e){ alert('فشل الاستيراد'); } finally { evt.target.value=''; } }; reader.readAsText(f); }
   window.$reportsView = { render };
 })();

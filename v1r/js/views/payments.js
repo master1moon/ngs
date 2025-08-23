@@ -35,11 +35,11 @@
     const tdDate=document.createElement('td'); const inDate=document.createElement('input'); inDate.type='date'; inDate.className='form-control'; inDate.value=p.date||''; tdDate.appendChild(inDate);
     const tdAct=document.createElement('td'); const bSave=document.createElement('button'); bSave.className='btn btn-sm btn-primary me-1'; bSave.textContent='حفظ'; const bCancel=document.createElement('button'); bCancel.className='btn btn-sm btn-secondary'; bCancel.textContent='إلغاء'; tdAct.appendChild(bSave); tdAct.appendChild(bCancel);
     tr.appendChild(tdStore); tr.appendChild(tdAmt); tr.appendChild(tdDate); tr.appendChild(tdAct);
-    bSave.addEventListener('click', ()=>{ const t=($state.payments||[]).find(x=> x.id===p.id); if (!t) return; t.storeId=sel.value; t.amount=Number(String(inAmt.value).replace(/,/g,''))||0; t.date=($dates?$dates.formatDateEn(inDate.value):inDate.value); $app.emitChange(); });
+    bSave.addEventListener('click', ()=>{ const t=($state.payments||[]).find(x=> x.id===p.id); if (!t) return; t.storeId=sel.value; t.amount=$dates.parseNumber(inAmt.value); t.date=($dates?$dates.formatDateEn(inDate.value):inDate.value); $app.emitChange(); });
     bCancel.addEventListener('click', renderRows);
   }
   function onAdd(){
-    const storeId = document.getElementById('payStore').value; const amount = Number((document.getElementById('payAmount').value||'').replace(/,/g,''))||0; const date = ($dates?$dates.formatDateEn(document.getElementById('payDate').value):document.getElementById('payDate').value) || ($dates?$dates.today():new Date().toISOString().slice(0,10));
+    const storeId = document.getElementById('payStore').value; const amount = $dates.parseNumber(document.getElementById('payAmount').value); const date = ($dates?$dates.formatDateEn(document.getElementById('payDate').value):document.getElementById('payDate').value) || ($dates?$dates.today():new Date().toISOString().slice(0,10));
     if (!storeId || amount<=0){ alert('أكمل البيانات'); return; }
     $state.payments.push({ id:'pay_'+Date.now(), storeId, amount, date }); document.getElementById('payAmount').value=''; document.getElementById('payDate').value=''; $app.emitChange();
   }

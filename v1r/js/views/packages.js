@@ -45,20 +45,29 @@
     const tdDate=document.createElement('td'); const inDate=document.createElement('input'); inDate.type='date'; inDate.className='form-control'; inDate.value=p.createdAt||''; tdDate.appendChild(inDate);
     const tdAct=document.createElement('td'); const bSave=document.createElement('button'); bSave.className='btn btn-sm btn-primary me-1'; bSave.textContent='حفظ'; const bCancel=document.createElement('button'); bCancel.className='btn btn-sm btn-secondary'; bCancel.textContent='إلغاء'; tdAct.appendChild(bSave); tdAct.appendChild(bCancel);
     tr.appendChild(tdName); tr.appendChild(tdRetail); tr.appendChild(tdWh); tr.appendChild(tdDist); tr.appendChild(tdDate); tr.appendChild(tdAct);
-    bSave.addEventListener('click', ()=>{ const t=($state.packages||[]).find(x=> x.id===p.id); if (!t) return; t.name=inName.value.trim(); t.retailPrice=Number(String(inRetail.value).replace(/,/g,''))||0; t.wholesalePrice=Number(String(inWh.value).replace(/,/g,''))||0; t.distributorPrice=Number(String(inDist.value).replace(/,/g,''))||0; t.createdAt = ($dates?$dates.formatDateEn(inDate.value):inDate.value); $app.emitChange(); });
+    bSave.addEventListener('click', ()=>{ const t=($state.packages||[]).find(x=> x.id===p.id); if (!t) return; t.name=inName.value.trim(); t.retailPrice=$dates.parseNumber(inRetail.value); t.wholesalePrice=$dates.parseNumber(inWh.value); t.distributorPrice=$dates.parseNumber(inDist.value); t.createdAt = ($dates?$dates.formatDateEn(inDate.value):inDate.value); $app.emitChange(); });
     bCancel.addEventListener('click', renderRows);
   }
   function onAdd(){
     const name = document.getElementById('pkgName').value.trim();
-    const retail = Number((document.getElementById('pkgRetail').value||'').replace(/,/g,''))||0;
-    const wh = Number((document.getElementById('pkgWholesale').value||'').replace(/,/g,''))||0;
-    const dist = Number((document.getElementById('pkgDistributor').value||'').replace(/,/g,''))||0;
+    const retail = $dates.parseNumber(document.getElementById('pkgRetail').value);
+    const wh = $dates.parseNumber(document.getElementById('pkgWholesale').value);
+    const dist = $dates.parseNumber(document.getElementById('pkgDistributor').value);
     const date = ($dates?$dates.formatDateEn(document.getElementById('packageDate').value):document.getElementById('packageDate').value) || ($dates?$dates.today():new Date().toISOString().slice(0,10));
     if (!name){ alert('أدخل اسم الباقة'); return; }
     $state.packages.push({ id:'pkg_'+Date.now(), name, retailPrice:retail, wholesalePrice:wh, distributorPrice:dist, createdAt:date });
     document.getElementById('pkgName').value=''; document.getElementById('pkgRetail').value=''; document.getElementById('pkgWholesale').value=''; document.getElementById('pkgDistributor').value=''; document.getElementById('packageDate').value='';
     $app.emitChange();
   }
-  function onDelete(id){ if (!confirm('حذف هذه الباقة؟')) return; $state.packages = ($state.packages||[]).filter(x=> x.id!==id); $app.emitChange(); }
+  function onDelete(id){
+    if (!confirm('حذف هذه الباقة؟')) return;
+    const usedInInventory = ($state.inventory||[]).some(e=> String(e.packageId)===String(id));
+    const usedInSales = ($state.sales||[]).some(e=> String(e.packageId)===String(id));
+    if (usedInInventory || usedInSales){ alert('لا يمكن حذف الباقة لوجود ارتباطات في المخزون أو المبيعات'); return; }
+    const p = ($state.packages||[]).find(x=> x.id===id);
+    if (p){ ($state.trash||($state.trash=[])).push({ id:'trash_'+Date.now(), section:'packages', item:p, deletedAt:new Date().toISOString() }); }
+    $state.packages = ($state.packages||[]).filter(x=> x.id!==id);
+    $app.emitChange();
+  }
   window.$packagesView = { render };
 })();

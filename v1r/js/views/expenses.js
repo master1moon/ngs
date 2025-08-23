@@ -33,11 +33,11 @@
     const tdDate=document.createElement('td'); const inDate=document.createElement('input'); inDate.type='date'; inDate.className='form-control'; inDate.value=e.date||''; tdDate.appendChild(inDate);
     const tdAct=document.createElement('td'); const bSave=document.createElement('button'); bSave.className='btn btn-sm btn-primary me-1'; bSave.textContent='حفظ'; const bCancel=document.createElement('button'); bCancel.className='btn btn-sm btn-secondary'; bCancel.textContent='إلغاء'; tdAct.appendChild(bSave); tdAct.appendChild(bCancel);
     tr.appendChild(tdType); tr.appendChild(tdAmt); tr.appendChild(tdDate); tr.appendChild(tdAct);
-    bSave.addEventListener('click', ()=>{ const t=($state.expenses||[]).find(x=> x.id===e.id); if (!t) return; t.type=inType.value.trim(); t.amount=Number(String(inAmt.value).replace(/,/g,''))||0; t.date=($dates?$dates.formatDateEn(inDate.value):inDate.value); $app.emitChange(); });
+    bSave.addEventListener('click', ()=>{ const t=($state.expenses||[]).find(x=> x.id===e.id); if (!t) return; t.type=inType.value.trim(); t.amount=$dates.parseNumber(inAmt.value); t.date=($dates?$dates.formatDateEn(inDate.value):inDate.value); $app.emitChange(); });
     bCancel.addEventListener('click', renderRows);
   }
   function onAdd(){
-    const type = document.getElementById('expType').value.trim(); const amount = Number((document.getElementById('expAmount').value||'').replace(/,/g,''))||0; const date = ($dates?$dates.formatDateEn(document.getElementById('expDate').value):document.getElementById('expDate').value) || ($dates?$dates.today():new Date().toISOString().slice(0,10));
+    const type = document.getElementById('expType').value.trim(); const amount = $dates.parseNumber(document.getElementById('expAmount').value); const date = ($dates?$dates.formatDateEn(document.getElementById('expDate').value):document.getElementById('expDate').value) || ($dates?$dates.today():new Date().toISOString().slice(0,10));
     if (!type || amount<=0){ alert('أكمل البيانات'); return; }
     $state.expenses.push({ id:'exp_'+Date.now(), type, amount, date }); document.getElementById('expType').value=''; document.getElementById('expAmount').value=''; document.getElementById('expDate').value=''; $app.emitChange();
   }
