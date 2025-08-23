@@ -7,7 +7,7 @@ function addExpense() {
   const customInp = document.getElementById('expenseTypeCustom'); if (customInp) customInp.value = '';
   document.getElementById('expenseAmount').value = '';
   document.getElementById('expenseNotes').value = '';
-  document.getElementById('expenseDate').value = formatDateEn(today);
+  if (typeof setExpenseDateInput === 'function') setExpenseDateInput(''); else document.getElementById('expenseDate').value = '';
   document.getElementById('addLater').checked = false;
   const modal = new bootstrap.Modal(document.getElementById('expenseModal')); modal.show();
 }
@@ -20,7 +20,7 @@ function editExpense(id) {
   const customInp = document.getElementById('expenseTypeCustom'); if (customInp) customInp.value = '';
   document.getElementById('expenseAmount').value = formatNumber(expense.amount);
   document.getElementById('expenseNotes').value = expense.notes || '';
-  document.getElementById('expenseDate').value = formatDateEn(expense.date || today);
+  document.getElementById('expenseDate').value = formatDateEn(expense.date);
   document.getElementById('addLater').checked = expense.addLater || false;
   const modal = new bootstrap.Modal(document.getElementById('expenseModal')); modal.show();
 }
@@ -39,7 +39,7 @@ function saveExpense() {
   const type = document.getElementById('expenseType').value;
   const amount = parseFormattedNumber(document.getElementById('expenseAmount').value) || 0;
   const notes = document.getElementById('expenseNotes').value;
-  const date = formatDateEn(document.getElementById('expenseDate').value || today);
+  const date = (typeof readExpenseDateInput === 'function') ? readExpenseDateInput() : formatDateEn(document.getElementById('expenseDate').value);
   const addLater = document.getElementById('addLater').checked;
   if (!type) { showNotification('يرجى إدخال نوع المصروف', 'error'); return; }
   if (id) {

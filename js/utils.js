@@ -30,9 +30,69 @@ function formatDateEn(dateStr) {
       if (m.isValid()) return m.format('YYYY-MM-DD');
     }
   } catch (_) {}
-  // fallback: simple cleanup
-  const m = /^\d{4}-\d{1,2}-\d{1,2}$/.test(raw) ? raw : raw.replace(/\D/g, '').replace(/(\d{4})(\d{2})(\d{2}).*/, '$1-$2-$3');
-  return m;
+  // fallback: normalize and pad
+  let out = raw;
+  if (!/^\d{4}-\d{1,2}-\d{1,2}$/.test(out)) {
+    const n = raw.replace(/\D/g, '');
+    if (n.length >= 8) out = n.slice(0,4)+'-'+n.slice(4,6)+'-'+n.slice(6,8);
+  }
+  const parts = out.split('-');
+  if (parts.length === 3) {
+    const y = parts[0]; const m = ('0'+parseInt(parts[1]||'0',10)).slice(-2); const d = ('0'+parseInt(parts[2]||'0',10)).slice(-2);
+    out = `${y}-${m}-${d}`;
+  }
+  return out;
+}
+
+// دوال مساعدة متخصصة للحقول المختلفة لضمان الاتساق ومنع الأخطاء
+function getDefaultDateForAdd() { return (typeof moment !== 'undefined') ? moment().format('YYYY-MM-DD') : (new Date()).toISOString().slice(0,10); }
+
+function setSaleDateInput(value) {
+  const el = document.getElementById('saleDate'); if (!el) return;
+  el.value = value ? formatDateEn(value) : '';
+}
+function readSaleDateInput() {
+  const el = document.getElementById('saleDate'); return el ? formatDateEn(el.value) : '';
+}
+
+function setPaymentDateInput(value) {
+  const el = document.getElementById('paymentDate'); if (!el) return;
+  el.value = value ? formatDateEn(value) : '';
+}
+function readPaymentDateInput() {
+  const el = document.getElementById('paymentDate'); return el ? formatDateEn(el.value) : '';
+}
+
+function setExpenseDateInput(value) {
+  const el = document.getElementById('expenseDate'); if (!el) return;
+  el.value = value ? formatDateEn(value) : '';
+}
+function readExpenseDateInput() {
+  const el = document.getElementById('expenseDate'); return el ? formatDateEn(el.value) : '';
+}
+
+function setStoreDateInput(value) {
+  const el = document.getElementById('storeDate'); if (!el) return;
+  el.value = value ? formatDateEn(value) : '';
+}
+function readStoreDateInput() {
+  const el = document.getElementById('storeDate'); return el ? formatDateEn(el.value) : '';
+}
+
+function setInventoryDateInput(value) {
+  const el = document.getElementById('inventoryDate'); if (!el) return;
+  el.value = value ? formatDateEn(value) : '';
+}
+function readInventoryDateInput() {
+  const el = document.getElementById('inventoryDate'); return el ? formatDateEn(el.value) : '';
+}
+
+function setPackageDateInput(value) {
+  const el = document.getElementById('packageDate'); if (!el) return;
+  el.value = value ? formatDateEn(value) : '';
+}
+function readPackageDateInput() {
+  const el = document.getElementById('packageDate'); return el ? formatDateEn(el.value) : '';
 }
 
 // تطبيق تنسيق الأرقام على جميع حقول الإدخال ذات الصنف formatted-input
@@ -102,9 +162,9 @@ function switchSection(targetSection, labelText) {
   const sectionEl = document.getElementById(targetSection);
   if (sectionEl) { sectionEl.style.display = 'block'; setTimeout(() => sectionEl.classList.add('show'), 10); }
   const title = labelText || (document.querySelector(`.sidebar .nav-link[data-section="${targetSection}"]`)?.textContent.trim() || '');
-  if (title) document.querySelector('.page-title').textContent = title;
-  if (targetSection === 'reports') if (typeof generatePartnerReports === 'function') generatePartnerReports();
-  if (targetSection === 'trash') if (typeof renderTrashTable === 'function') setTimeout(() => renderTrashTable(), 100);
+  const titleEl = document.querySelector('.page-title'); if (title && titleEl) titleEl.textContent = title;
+  if (targetSection === 'reports') { try{ generateDebtReport(); updateProfitReport(); generatePartnerReports(); }catch(_){} }
+  if (targetSection === 'trash') { try{ setTimeout(() => renderTrashTable(), 50); }catch(_){} }
 }
 
 // ضمان إظهار القسم الافتراضي حتى لو فشل تهيئة أخرى
@@ -113,6 +173,15 @@ document.addEventListener('DOMContentLoaded', function () {
   if (currentVisible && !currentVisible.classList.contains('show')) {
     currentVisible.classList.add('show');
   }
+});
+
+// تفويض نقر عام لروابط القائمة لضمان عمل التنقل دائمًا
+document.addEventListener('click', function(ev){
+  const anchor = ev.target.closest && ev.target.closest('.sidebar .nav-link, #mobileDrawer .nav-link');
+  if (!anchor) return;
+  ev.preventDefault();
+  const targetSection = anchor.getAttribute('data-section');
+  try { switchSection(targetSection, (anchor.textContent||'').trim()); } catch(_){ }
 });
 
 // إجبار حقول التاريخ على الإنجليزية وترتيب LTR
@@ -169,7 +238,29 @@ document.addEventListener('DOMContentLoaded', function () {
   window.addEventListener('resize', function () { if (window.innerWidth >= 769) closeDrawer(); });
 });
 
+// تفويض أزرار الإضافة/الحفظ/التصدير والاستيراد لضمان عملها دائمًا
+(function(){
+  function on(id, handler){ document.addEventListener('click', function(ev){ const el = ev.target.closest && ev.target.closest('#'+id); if (!el) return; ev.preventDefault(); try{ handler(el); }catch(_){} }); }
+  on('addPackageBtn', ()=> { if (typeof addPackage==='function') addPackage(); });
+  on('savePackageBtn', ()=> { if (typeof savePackage==='function') savePackage(); });
+  on('addInventoryBtn', ()=> { if (typeof addInventory==='function') addInventory(); });
+  on('saveInventoryBtn', ()=> { if (typeof saveInventory==='function') saveInventory(); });
+  on('addStoreBtn', ()=> { if (typeof addStore==='function') addStore(); });
+  on('saveStoreBtn', ()=> { if (typeof saveStore==='function') saveStore(); });
+  on('addExpenseBtn', ()=> { if (typeof addExpense==='function') addExpense(); });
+  on('saveExpenseBtn', ()=> { if (typeof saveExpense==='function') saveExpense(); });
+  on('saveSaleBtn', ()=> { if (typeof saveSale==='function') saveSale(); });
+  on('savePaymentBtn', ()=> { if (typeof savePayment==='function') savePayment(); });
+  on('exportDataBtn', ()=> { if (typeof exportData==='function') exportData(); });
+  on('importDataBtn', ()=> { if (typeof importData==='function') importData(); });
+  // ديناميكيات داخل تفاصيل المحل
+  on('addSaleBtn', el=> { const sid = el.getAttribute('data-store'); if (typeof addSale==='function') addSale(sid||''); });
+  on('addPaymentBtn', el=> { const sid = el.getAttribute('data-store'); if (typeof addPayment==='function') addPayment(sid||''); });
+})();
+
 function setTextSafe(el, text){ if (el) el.textContent = text; }
+
+// تم التراجع عن إضافة زر التقويم السريع بناءً على طلب المستخدم
 
 // تصدير الدوال للنطاق العام
 if (typeof window !== 'undefined') {
@@ -179,4 +270,12 @@ if (typeof window !== 'undefined') {
   window.formatDateEn = formatDateEn;
   window.showNotification = showNotification;
   window.switchSection = switchSection;
+  // expose date helpers
+  window.getDefaultDateForAdd = getDefaultDateForAdd;
+  window.setSaleDateInput = setSaleDateInput; window.readSaleDateInput = readSaleDateInput;
+  window.setPaymentDateInput = setPaymentDateInput; window.readPaymentDateInput = readPaymentDateInput;
+  window.setExpenseDateInput = setExpenseDateInput; window.readExpenseDateInput = readExpenseDateInput;
+  window.setStoreDateInput = setStoreDateInput; window.readStoreDateInput = readStoreDateInput;
+  window.setInventoryDateInput = setInventoryDateInput; window.readInventoryDateInput = readInventoryDateInput;
+  window.setPackageDateInput = setPackageDateInput; window.readPackageDateInput = readPackageDateInput;
 }

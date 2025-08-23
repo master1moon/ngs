@@ -735,7 +735,7 @@ function exportPartners(format){
     XLSX.writeFile(wb, `تقرير_الشركاء_${moment().format('YYYYMMDD')}.xlsx`);
     showNotification('تم التصدير إلى Excel', 'success');
   } else if (format==='txt'){
-    let txt = `تقرير الشركاء\n\nالمدة: ${text}\nعدد الشركاء: ${partners}\nإجمالي التسديدات: ${totalPays}\nإجمالي المصروفات: ${totalExps}\نصافي الأرباح: ${net}\nصافي لكل شريك: ${perPartner}\n\n===== التسديدات =====\n`;
+    let txt = `تقرير الشركاء\n\nالمدة: ${text}\nعدد الشركاء: ${partners}\nإجمالي التسديدات: ${totalPays}\nإجمالي المصروفات: ${totalExps}\nصافي الأرباح: ${net}\nصافي لكل شريك: ${perPartner}\n\n===== التسديدات =====\n`;
     if (listPays.length){ txt += ['التاريخ','المحل','المبلغ','ملاحظات'].join('\t')+'\n'; listPays.forEach(r=>{ txt += [r.التاريخ, r.المحل, r.المبلغ, r.ملاحظات].join('\t')+'\n'; }); }
     txt += '\n===== المصروفات =====\n';
     if (listExps.length){ txt += ['التاريخ','النوع','المبلغ','ملاحظات'].join('\t')+'\n'; listExps.forEach(r=>{ txt += [r.التاريخ, r.النوع, r.المبلغ, r.ملاحظات].join('\t')+'\n'; }); }

@@ -94,7 +94,7 @@ function addStore() {
   document.getElementById('storeId').value = '';
   document.getElementById('storeName').value = '';
   document.getElementById('storePriceType').value = 'retail';
-  document.getElementById('storeDate').value = today;
+  if (typeof setStoreDateInput === 'function') setStoreDateInput(''); else document.getElementById('storeDate').value = '';
   const modal = new bootstrap.Modal(document.getElementById('storeModal')); modal.show();
 }
 
@@ -104,12 +104,14 @@ function editStore(id) {
   document.getElementById('storeId').value = store.id;
   document.getElementById('storeName').value = store.name;
   document.getElementById('storePriceType').value = store.priceType;
-  document.getElementById('storeDate').value = store.createdAt || today;
+  if (typeof setStoreDateInput === 'function') setStoreDateInput(store.createdAt); else document.getElementById('storeDate').value = formatDateEn(store.createdAt);
   const modal = new bootstrap.Modal(document.getElementById('storeModal')); modal.show();
 }
 
 function deleteStore(id) {
   if (!confirm('هل أنت متأكد من حذف هذا المحل؟')) return;
+  const referenced = (data.sales||[]).some(s => s.storeId === id) || (data.payments||[]).some(p => p.storeId === id);
+  if (referenced){ showNotification('لا يمكن حذف المحل لوجود مبيعات/تسديدات مرتبطة به', 'error'); return; }
   const store = data.stores.find(s => s.id === id);
   data.stores = data.stores.filter(s => s.id !== id);
   saveData();
@@ -121,7 +123,7 @@ function saveStore() {
   const id = document.getElementById('storeId').value;
   const name = document.getElementById('storeName').value;
   const priceType = document.getElementById('storePriceType').value;
-  const date = document.getElementById('storeDate').value || today;
+  const date = (typeof readStoreDateInput === 'function') ? readStoreDateInput() : formatDateEn(document.getElementById('storeDate').value);
   if (!name) { showNotification('يرجى إدخال اسم المحل', 'error'); return; }
   if (id) {
     const store = data.stores.find(s => s.id === id);

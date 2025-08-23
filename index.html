@@ -239,7 +239,7 @@
         }
         
         .currency::after {
-            content: " ر.ي";
+            content: " ﷼";
             font-family: inherit;
         }
         
@@ -1414,6 +1414,18 @@
         // تهيئة التواريخ باللغة العربية
         moment.locale('ar');
         const today = moment().format('YYYY-MM-DD');
+        if (!window.formatDateEn) {
+            window.formatDateEn = function(dateStr) {
+                if (!dateStr) return '';
+                var raw = String(dateStr).slice(0, 10);
+                if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(raw)) {
+                    return raw.replace(/-(\d)(?!\d)/g, '-0$1').replace(/^(\d{4})-(\d{2})-(\d{2}).*/, '$1-$2-$3');
+                }
+                var n = raw.replace(/\D/g, '');
+                if (n.length >= 8) return n.slice(0,4)+'-'+n.slice(4,6)+'-'+n.slice(6,8);
+                return raw;
+            };
+        }
         document.getElementById('currentDate').textContent = toEnglishDigits(moment().format('YYYY-MM-DD'));
         document.getElementById('currentMonth').textContent = toEnglishDigits(moment().format('MMMM'));
         
@@ -1559,10 +1571,7 @@
                 // محاولة تحميل البيانات المشفرة أولاً
                 let parsedData = null;
                 
-                if (window.DataEncryption && window.DataEncryption.loadEncrypted) {
-                    // محاولة تحميل البيانات المشفرة
-                    parsedData = window.DataEncryption.loadEncrypted('networkCardsData');
-                }
+                // تعطيل التشفير: تحميل عادي فقط
                 
                 // إذا فشل التحميل المشفر، حاول التحميل العادي
                 if (!parsedData) {
@@ -1655,15 +1664,8 @@
                 data = validData;
                 
                 // حفظ البيانات بالتشفير إذا كان متاحاً
-                let saved = false;
-                if (window.DataEncryption && window.DataEncryption.saveEncrypted) {
-                    saved = window.DataEncryption.saveEncrypted('networkCardsData', validData);
-                }
-                
-                // إذا فشل التشفير، احفظ بالطريقة العادية
-                if (!saved) {
-                    localStorage.setItem('networkCardsData', JSON.stringify(validData));
-                }
+                // تعطيل التشفير: حفظ مباشر
+                localStorage.setItem('networkCardsData', JSON.stringify(validData));
                 
                 showNotification('تم حفظ البيانات بنجاح', 'success');
                 
@@ -2288,7 +2290,7 @@
             document.getElementById('saleReason').value = '';
             document.getElementById('saleQuantity').value = '';
             document.getElementById('saleAmount').value = '';
-            document.getElementById('saleDate').value = today;
+            if (typeof setSaleDateInput === 'function') setSaleDateInput(''); else document.getElementById('saleDate').value = '';
             document.getElementById('customReasonGroup').style.display = 'none';
             document.getElementById('amountGroup').style.display = 'none';
             
@@ -2304,15 +2306,17 @@
             const reason = document.getElementById('saleReason').value;
             const quantity = parseFormattedNumber(document.getElementById('saleQuantity').value) || 0;
             const amount = parseFormattedNumber(document.getElementById('saleAmount').value) || 0;
-            const date = document.getElementById('saleDate').value || today;
+            const date = formatDateEn(document.getElementById('saleDate').value);
             
             if (!storeId || (!packageId && !reason)) {
                 showNotification('يرجى ملء جميع الحقول المطلوبة', 'error');
                 return;
             }
             
+            const isEdit = !!id;
             const isCustom = packageId === 'custom';
             const store = data.stores.find(s => s.id === storeId);
+            const oldSale = isEdit ? data.sales.find(s => s.id === id) : null;
             const pkg = packageId && !isCustom ? data.packages.find(p => p.id === packageId) : null;
             
             let pricePerUnit = 0;
@@ -2322,6 +2326,10 @@
                 // بيع مخصص
                 pricePerUnit = amount;
                 total = amount;
+                // عند التحويل إلى مخصص في التعديل، أعد الكمية القديمة إن وجدت
+                if (isEdit && oldSale && oldSale.packageId && oldSale.packageId !== 'custom' && oldSale.quantity) {
+                    addToInventory(oldSale.packageId, oldSale.quantity);
+                }
             } else if (pkg && store) {
                 // تحديد السعر حسب نوع سعر المحل
                 switch(store.priceType) {
@@ -2338,26 +2346,56 @@
                         pricePerUnit = pkg.retailPrice || 0;
                 }
                 total = quantity * pricePerUnit;
-                // تحقق من توفر المخزون وخصمه
+                // تحقق من توفر المخزون بشكل معاملي
                 if (quantity <= 0) {
                     showNotification('الكمية غير صحيحة', 'error');
                     return;
                 }
-                const ok = deductFromInventory(packageId, quantity);
-                if (!ok) {
-                    showNotification('الكمية المطلوبة غير متوفرة في المخزون', 'error');
-                    return;
+                if (isEdit && oldSale) {
+                    const samePkg = oldSale.packageId === packageId && oldSale.packageId !== 'custom';
+                    const availableNow = getTotalInventoryForPackage(packageId) + (samePkg ? (oldSale.quantity || 0) : 0);
+                    if (availableNow < quantity) {
+                        showNotification('الكمية المطلوبة غير متوفرة في المخزون', 'error');
+                        return;
+                    }
+                    // طبّق الفارق فقط
+                    if (samePkg) {
+                        if (quantity > (oldSale.quantity || 0)) {
+                            const diff = quantity - (oldSale.quantity || 0);
+                            if (!deductFromInventory(packageId, diff)) {
+                                showNotification('الكمية المطلوبة غير متوفرة في المخزون', 'error');
+                                return;
+                            }
+                        } else if (quantity < (oldSale.quantity || 0)) {
+                            addToInventory(packageId, (oldSale.quantity || 0) - quantity);
+                        }
+                    } else {
+                        if (oldSale.packageId && oldSale.packageId !== 'custom' && oldSale.quantity) {
+                            addToInventory(oldSale.packageId, oldSale.quantity);
+                        }
+                        if (!deductFromInventory(packageId, quantity)) {
+                            showNotification('الكمية المطلوبة غير متوفرة في المخزون', 'error');
+                            return;
+                        }
+                    }
+                } else {
+                    // إضافة جديدة: خصم الكمية كاملة بعد التحقق
+                    const availableNow = getTotalInventoryForPackage(packageId);
+                    if (availableNow < quantity) {
+                        showNotification('الكمية المطلوبة غير متوفرة في المخزون', 'error');
+                        return;
+                    }
+                    if (!deductFromInventory(packageId, quantity)) {
+                        showNotification('الكمية المطلوبة غير متوفرة في المخزون', 'error');
+                        return;
+                    }
                 }
             }
             
-            if (id) {
+            if (isEdit) {
                 // تحديث البيع الحالي
-                const sale = data.sales.find(s => s.id === id);
+                const sale = oldSale;
                 if (sale) {
-                    // إذا كان البيع السابق ليس مخصصاً وكان له كمية وباقة، قم بإرجاع الكمية القديمة إلى المخزون أولاً
-                    if (sale.packageId && sale.packageId !== 'custom' && sale.quantity) {
-                        addToInventory(sale.packageId, sale.quantity);
-                    }
                     sale.packageId = packageId;
                     sale.reason = reason;
                     sale.quantity = quantity;
@@ -2445,7 +2483,7 @@
             document.getElementById('saleReason').value = sale.reason || '';
             document.getElementById('saleQuantity').value = formatNumber(sale.quantity) || '';
             document.getElementById('saleAmount').value = formatNumber(sale.amount) || '';
-            document.getElementById('saleDate').value = sale.date;
+            if (typeof setSaleDateInput === 'function') setSaleDateInput(sale.date); else document.getElementById('saleDate').value = formatDateEn(sale.date);
             document.getElementById('customReasonGroup').style.display = isCustom ? 'block' : 'none';
             document.getElementById('quantityGroup').style.display = isCustom ? 'none' : 'block';
             document.getElementById('amountGroup').style.display = isCustom ? 'block' : 'none';
@@ -2482,7 +2520,7 @@
             document.getElementById('paymentStoreId').value = storeId;
             document.getElementById('paymentAmount').value = '';
             document.getElementById('paymentNotes').value = '';
-            document.getElementById('paymentDate').value = today;
+            if (typeof setPaymentDateInput === 'function') setPaymentDateInput(''); else document.getElementById('paymentDate').value = '';
             
             const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
             modal.show();
@@ -2494,7 +2532,7 @@
             const storeId = document.getElementById('paymentStoreId').value;
             const amount = parseFormattedNumber(document.getElementById('paymentAmount').value);
             const notes = document.getElementById('paymentNotes').value;
-            const date = document.getElementById('paymentDate').value || today;
+            const date = formatDateEn(document.getElementById('paymentDate').value);
             
             if (!storeId || isNaN(amount) || amount <= 0) {
                 showNotification('يرجى ملء جميع الحقول المطلوبة', 'error');
@@ -2543,7 +2581,7 @@
             document.getElementById('paymentStoreId').value = payment.storeId;
             document.getElementById('paymentAmount').value = formatNumber(payment.amount);
             document.getElementById('paymentNotes').value = payment.notes || '';
-            document.getElementById('paymentDate').value = payment.date;
+            if (typeof setPaymentDateInput === 'function') setPaymentDateInput(payment.date); else document.getElementById('paymentDate').value = formatDateEn(payment.date);
             
             const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
             modal.show();
@@ -2573,7 +2611,7 @@
             document.getElementById('retailPrice').value = '';
             document.getElementById('wholesalePrice').value = '';
             document.getElementById('distributorPrice').value = '';
-            document.getElementById('packageDate').value = today;
+            if (typeof setPackageDateInput === 'function') setPackageDateInput(''); else document.getElementById('packageDate').value = '';
             
             const modal = new bootstrap.Modal(document.getElementById('packageModal'));
             modal.show();
@@ -2590,7 +2628,7 @@
             document.getElementById('retailPrice').value = pkg.retailPrice ? formatNumber(pkg.retailPrice) : '';
             document.getElementById('wholesalePrice').value = pkg.wholesalePrice ? formatNumber(pkg.wholesalePrice) : '';
             document.getElementById('distributorPrice').value = pkg.distributorPrice ? formatNumber(pkg.distributorPrice) : '';
-            document.getElementById('packageDate').value = pkg.createdAt || today;
+            if (typeof setPackageDateInput === 'function') setPackageDateInput(pkg.createdAt || ''); else document.getElementById('packageDate').value = formatDateEn(pkg.createdAt || '');
             
             const modal = new bootstrap.Modal(document.getElementById('packageModal'));
             modal.show();
@@ -2614,7 +2652,7 @@
             const retailPrice = parseFormattedNumber(document.getElementById('retailPrice').value) || null;
             const wholesalePrice = parseFormattedNumber(document.getElementById('wholesalePrice').value) || null;
             const distributorPrice = parseFormattedNumber(document.getElementById('distributorPrice').value) || null;
-            const date = document.getElementById('packageDate').value || today;
+            const date = formatDateEn(document.getElementById('packageDate').value);
             
             if (!name) {
                 showNotification('يرجى إدخال اسم الباقة', 'error');
@@ -2669,7 +2707,7 @@
             document.getElementById('inventoryModalTitle').textContent = 'إضافة كمية جديدة';
             document.getElementById('inventoryId').value = '';
             document.getElementById('inventoryQuantity').value = '';
-            document.getElementById('inventoryDate').value = today;
+            if (typeof setInventoryDateInput === 'function') setInventoryDateInput(''); else document.getElementById('inventoryDate').value = '';
             
             const modal = new bootstrap.Modal(document.getElementById('inventoryModal'));
             modal.show();
@@ -2694,7 +2732,7 @@
             document.getElementById('inventoryModalTitle').textContent = 'تعديل الكمية';
             document.getElementById('inventoryId').value = item.id;
             document.getElementById('inventoryQuantity').value = formatNumber(item.quantity);
-            document.getElementById('inventoryDate').value = item.createdAt || today;
+            if (typeof setInventoryDateInput === 'function') setInventoryDateInput(item.createdAt || ''); else document.getElementById('inventoryDate').value = formatDateEn(item.createdAt || '');
             
             const modal = new bootstrap.Modal(document.getElementById('inventoryModal'));
             modal.show();
@@ -2716,7 +2754,7 @@
             const id = document.getElementById('inventoryId').value;
             const packageId = document.getElementById('inventoryPackage').value;
             const quantity = parseFormattedNumber(document.getElementById('inventoryQuantity').value);
-            const date = document.getElementById('inventoryDate').value || today;
+            const date = formatDateEn(document.getElementById('inventoryDate').value);
             
             if (!packageId || isNaN(quantity) || quantity <= 0) {
                 showNotification('يرجى ملء جميع الحقول المطلوبة', 'error');
@@ -2758,7 +2796,7 @@
             document.getElementById('storeId').value = '';
             document.getElementById('storeName').value = '';
             document.getElementById('storePriceType').value = 'retail';
-            document.getElementById('storeDate').value = today;
+            if (typeof setStoreDateInput === 'function') setStoreDateInput(''); else document.getElementById('storeDate').value = '';
             
             const modal = new bootstrap.Modal(document.getElementById('storeModal'));
             modal.show();
@@ -2773,7 +2811,7 @@
             document.getElementById('storeId').value = store.id;
             document.getElementById('storeName').value = store.name;
             document.getElementById('storePriceType').value = store.priceType;
-            document.getElementById('storeDate').value = store.createdAt || today;
+            if (typeof setStoreDateInput === 'function') setStoreDateInput(store.createdAt || ''); else document.getElementById('storeDate').value = formatDateEn(store.createdAt || '');
             
             const modal = new bootstrap.Modal(document.getElementById('storeModal'));
             modal.show();
@@ -2797,7 +2835,7 @@
             const id = document.getElementById('storeId').value;
             const name = document.getElementById('storeName').value;
             const priceType = document.getElementById('storePriceType').value;
-            const date = document.getElementById('storeDate').value || today;
+            const date = formatDateEn(document.getElementById('storeDate').value);
             
             if (!name) {
                 showNotification('يرجى إدخال اسم المحل', 'error');
@@ -2846,7 +2884,7 @@
             if (customInp) customInp.value = '';
             document.getElementById('expenseAmount').value = '';
             document.getElementById('expenseNotes').value = '';
-            document.getElementById('expenseDate').value = today;
+            if (typeof setExpenseDateInput === 'function') setExpenseDateInput(''); else document.getElementById('expenseDate').value = '';
             document.getElementById('addLater').checked = false;
             
             const modal = new bootstrap.Modal(document.getElementById('expenseModal'));
@@ -2865,7 +2903,7 @@
             if (customInp) customInp.value = '';
             document.getElementById('expenseAmount').value = formatNumber(expense.amount);
             document.getElementById('expenseNotes').value = expense.notes || '';
-            document.getElementById('expenseDate').value = expense.date || today;
+            document.getElementById('expenseDate').value = formatDateEn(expense.date || '');
             document.getElementById('addLater').checked = expense.addLater || false;
             
             const modal = new bootstrap.Modal(document.getElementById('expenseModal'));
@@ -2890,7 +2928,7 @@
             const type = document.getElementById('expenseType').value;
             const amount = parseFormattedNumber(document.getElementById('expenseAmount').value) || 0;
             const notes = document.getElementById('expenseNotes').value;
-            const date = document.getElementById('expenseDate').value || today;
+            const date = formatDateEn(document.getElementById('expenseDate').value);
             const addLater = document.getElementById('addLater').checked;
             
             if (!type) {
@@ -2956,7 +2994,8 @@
         
         // تحديث قائمة المحلات في التقارير
         function updateReportStores() {
-            const select = document.getElementById('reportStoreSelect');
+            const select = document.getElementById('reportsStoreFilter');
+            if (!select) return;
             // مسح الخيارات الحالية باستثناء "جميع المحلات"
             while (select.options.length > 1) {
                 select.remove(1);
@@ -3765,6 +3804,14 @@
                     switchSection(targetSection, this.textContent.trim());
                 });
             });
+            // تفويض عام للنقرات لضمان عمل الروابط حتى لو فشل ربط فردي
+            document.body.addEventListener('click', function(ev){
+                const anchor = ev.target.closest && ev.target.closest('.sidebar .nav-link, #mobileDrawer .nav-link');
+                if (!anchor) return;
+                ev.preventDefault();
+                const targetSection = anchor.getAttribute('data-section');
+                switchSection(targetSection, anchor.textContent.trim());
+            });
             
             // إضافة معالجات الأحداث للأزرار
             document.getElementById('addPackageBtn').addEventListener('click', addPackage);
@@ -3838,12 +3885,7 @@
             document.getElementById('saveSaleBtn').addEventListener('click', saveSale);
             document.getElementById('savePaymentBtn').addEventListener('click', savePayment);
             
-            // تعيين تاريخ اليوم كافتراضي لحقول التاريخ
-            document.querySelectorAll('input[type="date"]').forEach(input => {
-                if (!input.value) {
-                    input.value = today;
-                }
-            });
+            // ترك قيم التاريخ كما هي دون فرض تاريخ اليوم افتراضياً
             
             // اختصارات سريعة على لوحة التحكم
             const qa = {
@@ -4001,23 +4043,12 @@
     </script>
 
     <script src="./js/security.js"></script>
-    <script src="./js/encryption.js"></script>
+
     <script src="./js/safeDOM.js"></script>
     <script src="./js/dataValidator.js"></script>
     <script src="./js/quickFixes.js"></script>
     <script src="./js/utils.js"></script>
     <script src="./js/reports.js"></script>
-    <script src="./app.js"></script>
-    <script src="./js/inventory.js"></script>
-    <script src="./js/sales.js"></script>
-    <script src="./js/payments.js"></script>
-    <script src="./js/expenses.js"></script>
-    <script src="./js/stores.js"></script>
-    <script src="./js/packages.js"></script>
-    <script src="./js/storage.js"></script>
-    <script src="./js/backup.js"></script>
-    <script src="./js/backupManager.js"></script>
-    <script src="./js/expensesTypes.js"></script>
     <script src="./js/trash.js"></script>
 
 

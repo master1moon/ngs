@@ -5,7 +5,7 @@ function addPayment(storeId) {
   document.getElementById('paymentStoreId').value = storeId;
   document.getElementById('paymentAmount').value = '';
   document.getElementById('paymentNotes').value = '';
-  document.getElementById('paymentDate').value = today;
+  if (typeof setPaymentDateInput === 'function') setPaymentDateInput(''); else document.getElementById('paymentDate').value = '';
   const modal = new bootstrap.Modal(document.getElementById('paymentModal')); modal.show();
 }
 
@@ -14,7 +14,7 @@ function savePayment() {
   const storeId = document.getElementById('paymentStoreId').value;
   const amount = parseFormattedNumber(document.getElementById('paymentAmount').value);
   const notes = document.getElementById('paymentNotes').value;
-  const date = document.getElementById('paymentDate').value || today;
+  const date = (typeof readPaymentDateInput === 'function') ? readPaymentDateInput() : formatDateEn(document.getElementById('paymentDate').value);
   if (!storeId || isNaN(amount) || amount <= 0) { showNotification('يرجى ملء جميع الحقول المطلوبة', 'error'); return; }
   if (id) {
     const payment = data.payments.find(p => p.id === id);
@@ -40,7 +40,7 @@ function editPayment(id) {
   document.getElementById('paymentStoreId').value = payment.storeId;
   document.getElementById('paymentAmount').value = formatNumber(payment.amount);
   document.getElementById('paymentNotes').value = payment.notes || '';
-  document.getElementById('paymentDate').value = payment.date;
+  if (typeof setPaymentDateInput === 'function') setPaymentDateInput(payment.date); else document.getElementById('paymentDate').value = formatDateEn(payment.date);
   const modal = new bootstrap.Modal(document.getElementById('paymentModal')); modal.show();
 }
 
