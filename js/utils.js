@@ -166,6 +166,15 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
+// تفويض نقر عام لروابط القائمة لضمان عمل التنقل دائمًا
+document.addEventListener('click', function(ev){
+  const anchor = ev.target.closest && ev.target.closest('.sidebar .nav-link, #mobileDrawer .nav-link');
+  if (!anchor) return;
+  ev.preventDefault();
+  const targetSection = anchor.getAttribute('data-section');
+  try { switchSection(targetSection, (anchor.textContent||'').trim()); } catch(_){ }
+});
+
 // إجبار حقول التاريخ على الإنجليزية وترتيب LTR
 document.addEventListener('DOMContentLoaded', function(){
   document.querySelectorAll('input[type="date"]').forEach(inp => {
