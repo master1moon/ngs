@@ -93,6 +93,7 @@
   function onDelete(id){
     if (!confirm('حذف هذا البيع؟')) return;
     const s = $state.sales.find(x=> x.id===id);
+    if (s && window.$trash){ try{ $trash.push('sales', s); }catch(_){}}
     if (s && s.packageId && s.quantity){ $engine.addInventory(s.packageId, s.quantity, s.date); }
     $state.sales = $state.sales.filter(x=> x.id!==id);
     $storage.save();

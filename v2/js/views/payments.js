@@ -52,6 +52,8 @@
 
   function onDelete(id){
     if (!confirm('حذف هذا التسديد؟')) return;
+    const p = $state.payments.find(x=> x.id===id);
+    if (p && window.$trash){ try{ $trash.push('payments', p); }catch(_){}}
     $state.payments = $state.payments.filter(x=> x.id!==id);
     $storage.save();
     renderRows();

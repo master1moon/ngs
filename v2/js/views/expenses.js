@@ -50,6 +50,8 @@
 
   function onDelete(id){
     if (!confirm('حذف هذا المصروف؟')) return;
+    const e = $state.expenses.find(x=> x.id===id);
+    if (e && window.$trash){ try{ $trash.push('expenses', e); }catch(_){}}
     $state.expenses = $state.expenses.filter(x=> x.id!==id);
     $storage.save();
     renderRows();

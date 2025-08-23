@@ -49,6 +49,8 @@
     if (!confirm('حذف هذا المحل؟')) return;
     const referenced = ($state.sales||[]).some(x=> String(x.storeId)===String(id)) || ($state.payments||[]).some(x=> String(x.storeId)===String(id));
     if (referenced){ alert('لا يمكن حذف المحل لوجود مبيعات/تسديدات مرتبطة به'); return; }
+    const st = $state.stores.find(x=> x.id===id);
+    if (st && window.$trash){ try{ $trash.push('stores', st); }catch(_){}}
     $state.stores = $state.stores.filter(x=> x.id!==id);
     $storage.save();
     renderRows();

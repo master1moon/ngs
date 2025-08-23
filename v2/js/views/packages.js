@@ -50,8 +50,10 @@
 
   function onDelete(id){
     if (!confirm('حذف هذه الباقة؟')) return;
+    const pkg = ($state.packages||[]).find(x=> x.id===id);
     const referenced = ($state.inventory||[]).some(i=> String(i.packageId)===String(id)) || ($state.sales||[]).some(s=> String(s.packageId)===String(id));
     if (referenced){ alert('لا يمكن حذف الباقة لوجود سجلات مرتبطة بها'); return; }
+    if (pkg && window.$trash) { try{ $trash.push('packages', pkg); }catch(_){}}
     window.$state.packages = window.$state.packages.filter(x=> x.id!==id);
     window.$storage.save();
     renderRows();

@@ -50,4 +50,12 @@
       partners: (obj.partners||[]).map(pr=>({ id: pr.id||('pr_'+Date.now()), name: pr.name||'', weight: Number(pr.weight)||1 }))
     };
   }
+
+  // import trash if provided
+  document.addEventListener('DOMContentLoaded', ()=>{
+    try{
+      const lastV1 = localStorage.getItem('networkCardsData');
+      if (lastV1){ const parsed = JSON.parse(lastV1); if (parsed && parsed.trash && window.$trash){ parsed.trash.forEach(entry=> $trash.push(entry.section||'unknown', entry.item||entry)); } }
+    }catch(_){ }
+  });
 })();

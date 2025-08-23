@@ -15,13 +15,29 @@
       + '  <div class="col-md-2"><button id="addInvBtn" class="btn btn-primary w-100">إضافة</button></div>'
       + '</div>'
       + '</div></div>'
-      + '<div class="table-responsive mt-3">\n'
-      + '  <table class="table table-sm align-middle"><thead><tr><th>الباقة</th><th>المتوفر</th></tr></thead><tbody id="invTable"></tbody></table>'
+      + '<div class="row g-3 mt-3">\n'
+      + '  <div class="col-md-6">\n'
+      + '    <div class="card"><div class="card-body">\n'
+      + '      <h6>إجمالي المتوفر لكل باقة</h6>'
+      + '      <div class="table-responsive mt-2">\n'
+      + '        <table class="table table-sm align-middle"><thead><tr><th>الباقة</th><th>المتوفر</th></tr></thead><tbody id="invTable"></tbody></table>'
+      + '      </div>'
+      + '    </div></div>'
+      + '  </div>\n'
+      + '  <div class="col-md-6">\n'
+      + '    <div class="card"><div class="card-body">\n'
+      + '      <h6>حركات المخزون (إدخالات)</h6>'
+      + '      <div class="table-responsive mt-2">\n'
+      + '        <table class="table table-sm align-middle"><thead><tr><th>الباقة</th><th>الكمية</th><th>التاريخ</th><th>إجراءات</th></tr></thead><tbody id="invRaw"></tbody></table>'
+      + '      </div>'
+      + '    </div></div>'
+      + '  </div>\n'
       + '</div>';
 
     if ($dates && $dates.InventoryDate) $dates.InventoryDate.set('');
     document.getElementById('addInvBtn').addEventListener('click', onAdd);
     renderRows();
+    renderRaw();
   }
 
   function renderRows(){
@@ -34,6 +50,28 @@
       tr.innerHTML = `<td>${p.name}</td><td ${low? 'class="text-danger"':''}>${qty.toLocaleString('en-US')}</td>`;
       tb.appendChild(tr);
     }
+  }
+
+  function renderRaw(){
+    const tb = document.getElementById('invRaw'); if (!tb) return; tb.innerHTML='';
+    for (const i of ($state.inventory||[])){
+      const pkg = ($state.packages||[]).find(p=> String(p.id)===String(i.packageId));
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${pkg?pkg.name:i.packageId}</td><td>${Number(i.quantity||0).toLocaleString('en-US')}</td><td>${i.createdAt||''}</td><td><button class="btn btn-sm btn-outline-danger" data-id="${i.id}">حذف</button></td>`;
+      tr.querySelector('button').addEventListener('click', ()=> onDeleteRaw(i.id));
+      tb.appendChild(tr);
+    }
+  }
+
+  function onDeleteRaw(id){
+    if (!confirm('حذف إدخال المخزون؟')) return;
+    const entry = ($state.inventory||[]).find(x=> x.id===id);
+    if (entry && window.$trash){ try{ $trash.push('inventory', entry); }catch(_){}}
+    $state.inventory = ($state.inventory||[]).filter(x=> x.id!==id);
+    $storage.save();
+    renderRaw();
+    renderRows();
+    document.dispatchEvent(new CustomEvent('state:changed'));
   }
 
   function onAdd(){
