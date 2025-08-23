@@ -251,6 +251,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function setTextSafe(el, text){ if (el) el.textContent = text; }
 
+// زر تقويم سريع لكل حقول التاريخ (اليوم/فتح التقويم)
+function attachQuickCalendarFor(inputId){
+  const inp = document.getElementById(inputId); if (!inp || inp.dataset.qcAttached) return;
+  try {
+    // أنشئ input-group دون كسر الـ id
+    const parent = inp.parentElement; if (!parent) return;
+    const group = document.createElement('div'); group.className = 'input-group';
+    parent.insertBefore(group, inp);
+    group.appendChild(inp);
+    const btnCal = document.createElement('button'); btnCal.type='button'; btnCal.className='btn btn-outline-secondary'; btnCal.textContent='تقويم';
+    const btnToday = document.createElement('button'); btnToday.type='button'; btnToday.className='btn btn-outline-primary'; btnToday.textContent='اليوم';
+    group.appendChild(btnCal); group.appendChild(btnToday);
+    btnCal.addEventListener('click', function(){ try{ if (typeof inp.showPicker==='function') inp.showPicker(); else { inp.focus(); inp.click(); } }catch(_){ inp.focus(); } });
+    btnToday.addEventListener('click', function(){ try{ inp.value = (typeof getDefaultDateForAdd==='function') ? getDefaultDateForAdd() : (new Date()).toISOString().slice(0,10); }catch(_){ inp.value = (new Date()).toISOString().slice(0,10); } });
+    inp.dataset.qcAttached = '1';
+  } catch(_){}
+}
+
+function setupQuickCalendarButtons(){
+  ['packageDate','inventoryDate','storeDate','expenseDate','saleDate','paymentDate'].forEach(attachQuickCalendarFor);
+}
+
+if (typeof document!=='undefined'){
+  document.addEventListener('DOMContentLoaded', function(){
+    try { setupQuickCalendarButtons(); }catch(_){ }
+  });
+}
+
 // تصدير الدوال للنطاق العام
 if (typeof window !== 'undefined') {
   window.toEnglishDigits = toEnglishDigits;
