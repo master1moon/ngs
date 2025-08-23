@@ -239,7 +239,7 @@
         }
         
         .currency::after {
-            content: " ر.ي";
+            content: " ﷼";
             font-family: inherit;
         }
         
@@ -1571,10 +1571,7 @@
                 // محاولة تحميل البيانات المشفرة أولاً
                 let parsedData = null;
                 
-                if (window.DataEncryption && window.DataEncryption.loadEncrypted) {
-                    // محاولة تحميل البيانات المشفرة
-                    parsedData = window.DataEncryption.loadEncrypted('networkCardsData');
-                }
+                // تعطيل التشفير: تحميل عادي فقط
                 
                 // إذا فشل التحميل المشفر، حاول التحميل العادي
                 if (!parsedData) {
@@ -1667,15 +1664,8 @@
                 data = validData;
                 
                 // حفظ البيانات بالتشفير إذا كان متاحاً
-                let saved = false;
-                if (window.DataEncryption && window.DataEncryption.saveEncrypted) {
-                    saved = window.DataEncryption.saveEncrypted('networkCardsData', validData);
-                }
-                
-                // إذا فشل التشفير، احفظ بالطريقة العادية
-                if (!saved) {
-                    localStorage.setItem('networkCardsData', JSON.stringify(validData));
-                }
+                // تعطيل التشفير: حفظ مباشر
+                localStorage.setItem('networkCardsData', JSON.stringify(validData));
                 
                 showNotification('تم حفظ البيانات بنجاح', 'success');
                 
@@ -4044,7 +4034,7 @@
     </script>
 
     <script src="./js/security.js"></script>
-    <script src="./js/encryption.js"></script>
+
     <script src="./js/safeDOM.js"></script>
     <script src="./js/dataValidator.js"></script>
     <script src="./js/quickFixes.js"></script>
