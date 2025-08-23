@@ -39,7 +39,7 @@
   function onAdd(){
     const name = document.getElementById('pkgName').value.trim();
     const retail = Number((document.getElementById('pkgRetail').value||'').replace(/,/g,''))||0;
-    const date = (window.$dates && $dates.PackageDate) ? $dates.PackageDate.read() : document.getElementById('packageDate').value;
+    let date = (window.$dates && $dates.PackageDate) ? $dates.PackageDate.read() : document.getElementById('packageDate').value; if (!date && $dates && $dates.today) date = $dates.today();
     if (!name){ alert('أدخل اسم الباقة'); return; }
     window.$state.packages.push({ id: 'pkg_'+Date.now(), name, retailPrice: retail, createdAt: date });
     window.$storage.save();
@@ -50,6 +50,8 @@
 
   function onDelete(id){
     if (!confirm('حذف هذه الباقة؟')) return;
+    const referenced = ($state.inventory||[]).some(i=> String(i.packageId)===String(id)) || ($state.sales||[]).some(s=> String(s.packageId)===String(id));
+    if (referenced){ alert('لا يمكن حذف الباقة لوجود سجلات مرتبطة بها'); return; }
     window.$state.packages = window.$state.packages.filter(x=> x.id!==id);
     window.$storage.save();
     renderRows();

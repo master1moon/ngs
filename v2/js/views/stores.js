@@ -14,7 +14,7 @@
       + '</div>'
       + '</div></div>'
       + '<div class="table-responsive mt-3">\n'
-      + '  <table class="table table-sm align-middle"><thead><tr><th>الاسم</th><th>نوع السعر</th><th>الرصيد</th></tr></thead><tbody id="storesTable"></tbody></table>'
+      + '  <table class="table table-sm align-middle"><thead><tr><th>الاسم</th><th>نوع السعر</th><th>الرصيد</th><th>إجراءات</th></tr></thead><tbody id="storesTable"></tbody></table>'
       + '</div>';
     document.getElementById('addStoreBtn').addEventListener('click', onAdd);
     renderRows();
@@ -27,7 +27,9 @@
       const tr = document.createElement('tr');
       tr.innerHTML = '<td>'+ (s.name||'') +'</td>'
                    + '<td>'+ (s.priceType||'retail') +'</td>'
-                   + '<td class="currency">'+ Number(bal||0).toLocaleString('en-US') +'</td>';
+                   + '<td class="currency">'+ Number(bal||0).toLocaleString('en-US') +'</td>'
+                   + '<td><button class="btn btn-sm btn-outline-danger" data-id="'+s.id+'">حذف</button></td>';
+      tr.querySelector('button').addEventListener('click', ()=> onDelete(s.id));
       tb.appendChild(tr);
     }
   }
@@ -41,6 +43,16 @@
     document.getElementById('storeName').value='';
     document.dispatchEvent(new CustomEvent('state:changed'));
     renderRows();
+  }
+
+  function onDelete(id){
+    if (!confirm('حذف هذا المحل؟')) return;
+    const referenced = ($state.sales||[]).some(x=> String(x.storeId)===String(id)) || ($state.payments||[]).some(x=> String(x.storeId)===String(id));
+    if (referenced){ alert('لا يمكن حذف المحل لوجود مبيعات/تسديدات مرتبطة به'); return; }
+    $state.stores = $state.stores.filter(x=> x.id!==id);
+    $storage.save();
+    renderRows();
+    document.dispatchEvent(new CustomEvent('state:changed'));
   }
 
   document.addEventListener('DOMContentLoaded', render);

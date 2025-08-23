@@ -39,7 +39,7 @@
   function onAdd(){
     const type = document.getElementById('expenseType').value.trim();
     const amount = Number((document.getElementById('expenseAmount').value||'').replace(/,/g,''))||0;
-    const date = ($dates && $dates.ExpenseDate) ? $dates.ExpenseDate.read() : document.getElementById('expenseDate').value;
+    let date = ($dates && $dates.ExpenseDate) ? $dates.ExpenseDate.read() : document.getElementById('expenseDate').value; if (!date && $dates && $dates.today) date = $dates.today();
     if (!type){ alert('أدخل نوع المصروف'); return; }
     $state.expenses.push({ id: 'exp_'+Date.now(), type, amount, date });
     $storage.save();

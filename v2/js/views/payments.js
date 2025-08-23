@@ -41,7 +41,7 @@
   function onAdd(){
     const storeId = document.getElementById('paymentStore').value.trim();
     const amount = Number((document.getElementById('paymentAmount').value||'').replace(/,/g,''))||0;
-    const date = ($dates && $dates.PaymentDate) ? $dates.PaymentDate.read() : document.getElementById('paymentDate').value;
+    let date = ($dates && $dates.PaymentDate) ? $dates.PaymentDate.read() : document.getElementById('paymentDate').value; if (!date && $dates && $dates.today) date = $dates.today();
     if (!storeId){ alert('اختر المحل'); return; }
     $state.payments.push({ id: 'pay_'+Date.now(), storeId, amount, date });
     $storage.save();

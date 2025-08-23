@@ -76,7 +76,7 @@
     const storeId = document.getElementById('saleStore').value.trim();
     const packageId = document.getElementById('salePackage').value.trim();
     const qty = Number((document.getElementById('saleQty').value||'').replace(/,/g,''))||0;
-    const date = ($dates && $dates.SaleDate) ? $dates.SaleDate.read() : document.getElementById('saleDate').value;
+    let date = ($dates && $dates.SaleDate) ? $dates.SaleDate.read() : document.getElementById('saleDate').value; if (!date && $dates && $dates.today) date = $dates.today();
     if (!storeId || !packageId || qty<=0){ alert('اختر المحل والباقة وأدخل كمية صحيحة'); return; }
     const pkg = ($state.packages||[]).find(p=> String(p.id)===String(packageId));
     const unit = priceForStore(pkg, storeId);

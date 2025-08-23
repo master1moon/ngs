@@ -12,6 +12,7 @@
       + '  <div class="col-md-3"><input id="partnerWeight" class="form-control" placeholder="الوزن (نسبة أو نقاط)"></div>'
       + '  <div class="col-md-3"><button id="addPartnerBtn" class="btn btn-primary w-100">إضافة شريك</button></div>'
       + '</div>'
+      + '<div class="table-responsive mt-3"><table class="table table-sm"><thead><tr><th>الشريك</th><th>الوزن</th><th>إجراءات</th></tr></thead><tbody id="partnersList"></tbody></table></div>'
       + '</div></div>'
       + '<div class="card mt-3"><div class="card-body">\n'
       + '<h6 class="mb-2">توزيع الأرباح حسب الفترة</h6>'
@@ -38,7 +39,13 @@
   }
 
   function renderList(){
-    // optional: show partners list elsewhere later
+    const tb = document.getElementById('partnersList'); if (!tb) return; tb.innerHTML='';
+    for (const p of ($state.partners||[])){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${p.name}</td><td>${p.weight}</td><td><button class="btn btn-sm btn-outline-danger" data-id="${p.id}">حذف</button></td>`;
+      tr.querySelector('button').addEventListener('click', ()=> onDelete(p.id));
+      tb.appendChild(tr);
+    }
   }
 
   function onAdd(){
@@ -50,6 +57,15 @@
     document.getElementById('partnerName').value=''; document.getElementById('partnerWeight').value='';
     document.dispatchEvent(new CustomEvent('state:changed'));
     updateSplit();
+  }
+
+  function onDelete(id){
+    if (!confirm('حذف هذا الشريك؟')) return;
+    $state.partners = ($state.partners||[]).filter(x=> x.id!==id);
+    $storage.save();
+    renderList();
+    updateSplit();
+    document.dispatchEvent(new CustomEvent('state:changed'));
   }
 
   function getRange(){
