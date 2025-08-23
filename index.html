@@ -2323,8 +2323,10 @@
                 return;
             }
             
+            const isEdit = !!id;
             const isCustom = packageId === 'custom';
             const store = data.stores.find(s => s.id === storeId);
+            const oldSale = isEdit ? data.sales.find(s => s.id === id) : null;
             const pkg = packageId && !isCustom ? data.packages.find(p => p.id === packageId) : null;
             
             let pricePerUnit = 0;
@@ -2334,6 +2336,10 @@
                 // بيع مخصص
                 pricePerUnit = amount;
                 total = amount;
+                // عند التحويل إلى مخصص في التعديل، أعد الكمية القديمة إن وجدت
+                if (isEdit && oldSale && oldSale.packageId && oldSale.packageId !== 'custom' && oldSale.quantity) {
+                    addToInventory(oldSale.packageId, oldSale.quantity);
+                }
             } else if (pkg && store) {
                 // تحديد السعر حسب نوع سعر المحل
                 switch(store.priceType) {
@@ -2350,26 +2356,56 @@
                         pricePerUnit = pkg.retailPrice || 0;
                 }
                 total = quantity * pricePerUnit;
-                // تحقق من توفر المخزون وخصمه
+                // تحقق من توفر المخزون بشكل معاملي
                 if (quantity <= 0) {
                     showNotification('الكمية غير صحيحة', 'error');
                     return;
                 }
-                const ok = deductFromInventory(packageId, quantity);
-                if (!ok) {
-                    showNotification('الكمية المطلوبة غير متوفرة في المخزون', 'error');
-                    return;
+                if (isEdit && oldSale) {
+                    const samePkg = oldSale.packageId === packageId && oldSale.packageId !== 'custom';
+                    const availableNow = getTotalInventoryForPackage(packageId) + (samePkg ? (oldSale.quantity || 0) : 0);
+                    if (availableNow < quantity) {
+                        showNotification('الكمية المطلوبة غير متوفرة في المخزون', 'error');
+                        return;
+                    }
+                    // طبّق الفارق فقط
+                    if (samePkg) {
+                        if (quantity > (oldSale.quantity || 0)) {
+                            const diff = quantity - (oldSale.quantity || 0);
+                            if (!deductFromInventory(packageId, diff)) {
+                                showNotification('الكمية المطلوبة غير متوفرة في المخزون', 'error');
+                                return;
+                            }
+                        } else if (quantity < (oldSale.quantity || 0)) {
+                            addToInventory(packageId, (oldSale.quantity || 0) - quantity);
+                        }
+                    } else {
+                        if (oldSale.packageId && oldSale.packageId !== 'custom' && oldSale.quantity) {
+                            addToInventory(oldSale.packageId, oldSale.quantity);
+                        }
+                        if (!deductFromInventory(packageId, quantity)) {
+                            showNotification('الكمية المطلوبة غير متوفرة في المخزون', 'error');
+                            return;
+                        }
+                    }
+                } else {
+                    // إضافة جديدة: خصم الكمية كاملة بعد التحقق
+                    const availableNow = getTotalInventoryForPackage(packageId);
+                    if (availableNow < quantity) {
+                        showNotification('الكمية المطلوبة غير متوفرة في المخزون', 'error');
+                        return;
+                    }
+                    if (!deductFromInventory(packageId, quantity)) {
+                        showNotification('الكمية المطلوبة غير متوفرة في المخزون', 'error');
+                        return;
+                    }
                 }
             }
             
-            if (id) {
+            if (isEdit) {
                 // تحديث البيع الحالي
-                const sale = data.sales.find(s => s.id === id);
+                const sale = oldSale;
                 if (sale) {
-                    // إذا كان البيع السابق ليس مخصصاً وكان له كمية وباقة، قم بإرجاع الكمية القديمة إلى المخزون أولاً
-                    if (sale.packageId && sale.packageId !== 'custom' && sale.quantity) {
-                        addToInventory(sale.packageId, sale.quantity);
-                    }
                     sale.packageId = packageId;
                     sale.reason = reason;
                     sale.quantity = quantity;

@@ -133,6 +133,8 @@ function editPackage(id) {
 
 function deletePackage(id) {
   if (!confirm('هل أنت متأكد من حذف هذه الباقة؟')) return;
+  const referenced = (data.inventory||[]).some(i => i.packageId === id) || (data.sales||[]).some(s => s.packageId === id && s.packageId !== 'custom');
+  if (referenced) { showNotification('لا يمكن حذف الباقة لوجود سجلات مرتبطة بها', 'error'); return; }
   const pkg = data.packages.find(p => p.id === id);
   data.packages = data.packages.filter(p => p.id !== id);
   saveData();

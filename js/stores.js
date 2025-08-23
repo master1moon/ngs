@@ -110,6 +110,8 @@ function editStore(id) {
 
 function deleteStore(id) {
   if (!confirm('هل أنت متأكد من حذف هذا المحل؟')) return;
+  const referenced = (data.sales||[]).some(s => s.storeId === id) || (data.payments||[]).some(p => p.storeId === id);
+  if (referenced){ showNotification('لا يمكن حذف المحل لوجود مبيعات/تسديدات مرتبطة به', 'error'); return; }
   const store = data.stores.find(s => s.id === id);
   data.stores = data.stores.filter(s => s.id !== id);
   saveData();
