@@ -13,16 +13,21 @@
       + '  <div class="col-md-4"><button id="addStoreBtn" class="btn btn-primary w-100">إضافة</button></div>'
       + '</div>'
       + '</div></div>'
+      + '<div class="row mt-2"><div class="col-md-4 ms-auto"><input id="storeSearch" class="form-control" placeholder="بحث في المحلات"></div></div>'
       + '<div class="table-responsive mt-3">\n'
       + '  <table class="table table-sm align-middle"><thead><tr><th>الاسم</th><th>نوع السعر</th><th>الرصيد</th><th>إجراءات</th></tr></thead><tbody id="storesTable"></tbody></table>'
       + '</div>';
     document.getElementById('addStoreBtn').addEventListener('click', onAdd);
+    document.getElementById('storeSearch').addEventListener('input', renderRows);
     renderRows();
   }
 
   function renderRows(){
     const tb = document.getElementById('storesTable'); if (!tb) return; tb.innerHTML='';
-    for (const s of $state.stores){
+    const q = (document.getElementById('storeSearch')?.value||'').toLowerCase();
+    let list = $state.stores||[];
+    if (q) list = list.filter(s=> [s.name||'', s.priceType||'', String($engine.getStoreBalance(s.id)||0)].join(' ').toLowerCase().includes(q));
+    for (const s of list){
       const bal = $engine.getStoreBalance(s.id);
       const tr = document.createElement('tr');
       tr.innerHTML = '<td class="cell-name">'+ (s.name||'') +'</td>'

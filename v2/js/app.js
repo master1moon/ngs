@@ -4,6 +4,14 @@
 
   document.addEventListener('DOMContentLoaded', function(){
     if (typeof $storage !== 'undefined') { $storage.load(); }
+    // auto-migrate from v1 if v2 empty
+    try{
+      const hasData = ($state.packages?.length||0) + ($state.inventory?.length||0) + ($state.stores?.length||0) + ($state.sales?.length||0) + ($state.payments?.length||0) + ($state.expenses?.length||0) + ($state.partners?.length||0);
+      if (!hasData){
+        const v1txt = localStorage.getItem('networkCardsData');
+        if (v1txt){ const v1 = JSON.parse(v1txt); const mapped = mapFromV1(v1); Object.assign($state, mapped); if (typeof $storage!== 'undefined') $storage.save(); }
+      }
+    }catch(_){ }
     document.querySelectorAll('input[type="date"]').forEach(inp=>{ inp.setAttribute('lang','en'); inp.style.direction='ltr'; inp.placeholder='YYYY-MM-DD'; });
     document.addEventListener('state:changed', function(){
       document.querySelectorAll('input[type="date"]').forEach(inp=>{ inp.setAttribute('lang','en'); inp.style.direction='ltr'; inp.placeholder='YYYY-MM-DD'; });

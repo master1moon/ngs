@@ -43,10 +43,21 @@
     const tb = document.getElementById('partnersList'); if (!tb) return; tb.innerHTML='';
     for (const p of ($state.partners||[])){
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${p.name}</td><td>${p.weight}</td><td><button class="btn btn-sm btn-outline-danger" data-id="${p.id}">حذف</button></td>`;
-      tr.querySelector('button').addEventListener('click', ()=> onDelete(p.id));
+      tr.innerHTML = `<td class="cell-name">${p.name}</td><td class="cell-weight">${p.weight}</td><td><button class="btn btn-sm btn-outline-secondary me-1 edit">تعديل</button><button class="btn btn-sm btn-outline-danger" data-id="${p.id}">حذف</button></td>`;
+      tr.querySelector('.edit').addEventListener('click', ()=> startEdit(tr, p));
+      tr.querySelector('.btn-outline-danger').addEventListener('click', ()=> onDelete(p.id));
       tb.appendChild(tr);
     }
+  }
+
+  function startEdit(tr, p){
+    tr.innerHTML = '';
+    const tdName = document.createElement('td'); const inName = document.createElement('input'); inName.className='form-control'; inName.value = p.name||''; tdName.appendChild(inName);
+    const tdWeight = document.createElement('td'); const inWeight = document.createElement('input'); inWeight.className='form-control'; inWeight.value = Number(p.weight||0); tdWeight.appendChild(inWeight);
+    const tdAct = document.createElement('td'); const bSave=document.createElement('button'); bSave.className='btn btn-sm btn-primary me-1'; bSave.textContent='حفظ'; const bCancel=document.createElement('button'); bCancel.className='btn btn-sm btn-secondary'; bCancel.textContent='إلغاء'; tdAct.appendChild(bSave); tdAct.appendChild(bCancel);
+    tr.appendChild(tdName); tr.appendChild(tdWeight); tr.appendChild(tdAct);
+    bSave.addEventListener('click', ()=>{ const t = ($state.partners||[]).find(x=> x.id===p.id); if (!t) return; t.name = inName.value.trim(); t.weight = Number(String(inWeight.value).replace(/,/g,''))||0; $storage.save(); renderList(); updateSplit(); document.dispatchEvent(new CustomEvent('state:changed')); });
+    bCancel.addEventListener('click', renderList);
   }
 
   function onAdd(){

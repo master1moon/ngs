@@ -16,6 +16,7 @@
       + '<div class="row g-2 mt-2">'
       + '  <div class="col-md-3"><input id="packageDate" type="date" class="form-control" placeholder="YYYY-MM-DD"></div>'
       + '  <div class="col-md-3"><button id="addPkgBtn" class="btn btn-primary w-100">إضافة</button></div>'
+      + '  <div class="col-md-6 text-end"><input id="pkgSearch" class="form-control" placeholder="بحث في الباقات"></div>'
       + '</div>'
       + '</div></div>'
       + '<div class="table-responsive mt-3">'
@@ -24,12 +25,16 @@
 
     if (window.$dates && $dates.PackageDate) $dates.PackageDate.set('');
     document.getElementById('addPkgBtn').addEventListener('click', onAdd);
+    document.getElementById('pkgSearch').addEventListener('input', renderRows);
     renderRows();
   }
 
   function renderRows(){
     const tb = document.getElementById('pkgTable'); if (!tb) return; tb.innerHTML='';
-    for (const p of window.$state.packages){
+    const q = (document.getElementById('pkgSearch')?.value||'').toLowerCase();
+    let list = window.$state.packages||[];
+    if (q) list = list.filter(p=> [p.name||'', String(p.retailPrice||''), String(p.wholesalePrice||''), String(p.distributorPrice||''), p.createdAt||''].join(' ').toLowerCase().includes(q));
+    for (const p of list){
       const tr = document.createElement('tr');
       tr.innerHTML = '<td class="cell-name">'+ (p.name||'') +'</td>'
                    + '<td class="cell-retail currency">'+ Number(p.retailPrice||0).toLocaleString('en-US') +'</td>'
