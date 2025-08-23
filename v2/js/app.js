@@ -55,7 +55,7 @@
       sales: (obj.sales||[]).map(s=>({ id: s.id||('sale_'+Date.now()), storeId: s.storeId||'', packageId: s.packageId||'', quantity: Number(s.quantity)||0, total: Number(s.total|| (Number(s.quantity||0)*Number(s.pricePerUnit||0)))||0, date: fd(s.date) })),
       payments: (obj.payments||[]).map(p=>({ id: p.id||('pay_'+Date.now()), storeId: p.storeId||'', amount: Number(p.amount)||0, date: fd(p.date) })),
       expenses: (obj.expenses||[]).map(e=>({ id: e.id||('exp_'+Date.now()), type: e.type||'', amount: Number(e.amount)||0, date: fd(e.date) })),
-      partners: (obj.partners||[]).map(pr=>({ id: pr.id||('pr_'+Date.now()), name: pr.name||'', weight: Number(pr.weight)||1 }))
+      partners: (obj.partners||[]).map(pr=>({ id: pr.id||('pr_'+Date.now()), name: pr.name||'', percent: (pr.percent!=null)? Number(pr.percent)||0 : (Number(pr.weight)||0) }))
     };
   }
 
