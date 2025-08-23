@@ -6,6 +6,7 @@
     stores: [],
     sales: [],
     payments: [],
-    expenses: []
+    expenses: [],
+    partners: []
   };
 })();

@@ -38,7 +38,7 @@
   });
 
   function mapFromV1(obj){
-    if (!obj || typeof obj !== 'object') return { packages:[], inventory:[], stores:[], sales:[], payments:[], expenses:[] };
+    if (!obj || typeof obj !== 'object') return { packages:[], inventory:[], stores:[], sales:[], payments:[], expenses:[], partners:[] };
     function fd(x){ return ($dates && $dates.formatDateEn) ? $dates.formatDateEn(x) : (x||'').slice(0,10); }
     return {
       packages: (obj.packages||[]).map(p=>({ id: p.id||('pkg_'+Date.now()), name: p.name||'', retailPrice: Number(p.retailPrice)||0, createdAt: fd(p.createdAt) })),
@@ -46,7 +46,8 @@
       stores: (obj.stores||[]).map(s=>({ id: s.id||('store_'+Date.now()), name: s.name||'', priceType: s.priceType||'retail', createdAt: fd(s.createdAt) })),
       sales: (obj.sales||[]).map(s=>({ id: s.id||('sale_'+Date.now()), storeId: s.storeId||'', total: Number(s.total|| (Number(s.quantity||0)*Number(s.pricePerUnit||0)))||0, date: fd(s.date) })),
       payments: (obj.payments||[]).map(p=>({ id: p.id||('pay_'+Date.now()), storeId: p.storeId||'', amount: Number(p.amount)||0, date: fd(p.date) })),
-      expenses: (obj.expenses||[]).map(e=>({ id: e.id||('exp_'+Date.now()), type: e.type||'', amount: Number(e.amount)||0, date: fd(e.date) }))
+      expenses: (obj.expenses||[]).map(e=>({ id: e.id||('exp_'+Date.now()), type: e.type||'', amount: Number(e.amount)||0, date: fd(e.date) })),
+      partners: (obj.partners||[]).map(pr=>({ id: pr.id||('pr_'+Date.now()), name: pr.name||'', weight: Number(pr.weight)||1 }))
     };
   }
 })();
