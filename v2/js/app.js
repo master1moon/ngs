@@ -44,7 +44,7 @@
       packages: (obj.packages||[]).map(p=>({ id: p.id||('pkg_'+Date.now()), name: p.name||'', retailPrice: Number(p.retailPrice)||0, wholesalePrice: Number(p.wholesalePrice)||0, distributorPrice: Number(p.distributorPrice)||0, createdAt: fd(p.createdAt) })),
       inventory: (obj.inventory||[]).map(i=>({ id: i.id||('inv_'+Date.now()), packageId: i.packageId||'', quantity: Number(i.quantity)||0, createdAt: fd(i.createdAt) })),
       stores: (obj.stores||[]).map(s=>({ id: s.id||('store_'+Date.now()), name: s.name||'', priceType: s.priceType||'retail', createdAt: fd(s.createdAt) })),
-      sales: (obj.sales||[]).map(s=>({ id: s.id||('sale_'+Date.now()), storeId: s.storeId||'', total: Number(s.total|| (Number(s.quantity||0)*Number(s.pricePerUnit||0)))||0, date: fd(s.date) })),
+      sales: (obj.sales||[]).map(s=>({ id: s.id||('sale_'+Date.now()), storeId: s.storeId||'', packageId: s.packageId||'', quantity: Number(s.quantity)||0, total: Number(s.total|| (Number(s.quantity||0)*Number(s.pricePerUnit||0)))||0, date: fd(s.date) })),
       payments: (obj.payments||[]).map(p=>({ id: p.id||('pay_'+Date.now()), storeId: p.storeId||'', amount: Number(p.amount)||0, date: fd(p.date) })),
       expenses: (obj.expenses||[]).map(e=>({ id: e.id||('exp_'+Date.now()), type: e.type||'', amount: Number(e.amount)||0, date: fd(e.date) })),
       partners: (obj.partners||[]).map(pr=>({ id: pr.id||('pr_'+Date.now()), name: pr.name||'', weight: Number(pr.weight)||1 }))

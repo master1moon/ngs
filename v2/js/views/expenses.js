@@ -16,7 +16,7 @@
       + '<div class="row mt-3"><div class="col-md-4"><input id="expenseSearch" class="form-control" placeholder="بحث في المصروفات"></div></div>'
       + '</div></div>'
       + '<div class="table-responsive mt-3">\n'
-      + '  <table class="table table-sm align-middle"><thead><tr><th>النوع</th><th>المبلغ</th><th>التاريخ</th><th>إجراءات</th></tr></thead><tbody id="expensesTable"></tbody></table>'}
+      + '  <table class="table table-sm align-middle"><thead><tr><th>النوع</th><th>المبلغ</th><th>التاريخ</th><th>إجراءات</th></tr></thead><tbody id="expensesTable"></tbody></table>'
       + '</div>';
 
     if ($dates && $dates.ExpenseDate) $dates.ExpenseDate.set('');

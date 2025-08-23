@@ -20,7 +20,7 @@
       + '</div></div>'
       + '<div class="row mt-3"><div class="col-md-4"><input id="saleSearch" class="form-control" placeholder="بحث في المبيعات"></div></div>'
       + '<div class="table-responsive mt-3">\n'
-      + '  <table class="table table-sm align-middle"><thead><tr><th>المحل</th><th>الباقة</th><th>الكمية</th><th>الإجمالي</th><th>التاريخ</th><th>إجراءات</th></tr></thead><tbody id="salesTable"></tbody></table>'}
+      + '  <table class="table table-sm align-middle"><thead><tr><th>المحل</th><th>الباقة</th><th>الكمية</th><th>الإجمالي</th><th>التاريخ</th><th>إجراءات</th></tr></thead><tbody id="salesTable"></tbody></table>'
       + '</div>';
 
     if ($dates && $dates.SaleDate) $dates.SaleDate.set('');
@@ -96,14 +96,22 @@
 
     bSave.addEventListener('click', ()=>{
       const target = $state.sales.find(x=> x.id===s.id); if (!target) return;
-      // return old qty to inventory
-      if (s.packageId && s.quantity){ $engine.addInventory(s.packageId, s.quantity, s.date); }
-      // compute new
       const newPkg = selPkg.value; const newStore = selStore.value; const newQty = Number(String(inQty.value).replace(/,/g,''))||0; const newDate = ($dates?$dates.formatDateEn(inDate.value):inDate.value);
       if (newQty<=0){ alert('كمية غير صحيحة'); return; }
-      // deduct new if available
-      if (!$engine.canDeduct(newPkg, newQty)){ alert('الكمية غير متوفرة في المخزون'); return; }
-      $engine.deductInventory(newPkg, newQty);
+      // compute available for new WITHOUT mutating: add back old qty if same package
+      const availableForNew = $engine.getInventory(newPkg) + (String(newPkg)===String(s.packageId) ? Number(s.quantity||0) : 0);
+      if (availableForNew < newQty){ alert('الكمية غير متوفرة في المخزون'); return; }
+      // apply inventory delta transactionally
+      if (String(newPkg)===String(s.packageId)){
+        if (newQty > Number(s.quantity||0)){
+          $engine.deductInventory(newPkg, newQty - Number(s.quantity||0));
+        } else if (newQty < Number(s.quantity||0)){
+          $engine.addInventory(newPkg, Number(s.quantity||0) - newQty, newDate);
+        }
+      } else {
+        if (s.packageId && s.quantity){ $engine.addInventory(s.packageId, s.quantity, s.date); }
+        $engine.deductInventory(newPkg, newQty);
+      }
       const pkgObj = ($state.packages||[]).find(p=> String(p.id)===String(newPkg)); const unit = priceForStore(pkgObj, newStore); const newTotal = unit * newQty;
       target.storeId = newStore; target.packageId = newPkg; target.quantity = newQty; target.date = newDate; target.total = newTotal;
       $storage.save(); renderRows(); render(); document.dispatchEvent(new CustomEvent('state:changed'));
